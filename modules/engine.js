@@ -140,7 +140,7 @@ export function update() {
       const dist = Math.hypot(dx, dy);
       if (dist < p.size + 12) {
         landed = true;
-        if (p.supplies.fuel) state.resources.fuel = state.maxResource;
+        if (p.supplies.fuel) state.resources.fuel = state.maxFuel;
         if (p.supplies.oxygen) state.resources.oxygen = state.maxResource;
         if (p.supplies.food) state.resources.food = state.maxResource;
       }
@@ -247,21 +247,24 @@ export function draw() {
   ctx.fillStyle = 'grey';
   ctx.fillRect(20, 40, 104, 14);
   ctx.fillStyle = 'orange';
-  ctx.fillRect(22, 42, state.resources.fuel, 10);
+  const fuelWidth = (state.resources.fuel / state.maxFuel) * 100;
+  ctx.fillRect(22, 42, fuelWidth, 10);
   ctx.strokeStyle = 'white';
   ctx.strokeRect(20, 40, 104, 14);
 
   ctx.fillStyle = 'grey';
   ctx.fillRect(20, 60, 104, 14);
   ctx.fillStyle = 'aqua';
-  ctx.fillRect(22, 62, state.resources.oxygen, 10);
+  const oxyWidth = (state.resources.oxygen / state.maxResource) * 100;
+  ctx.fillRect(22, 62, oxyWidth, 10);
   ctx.strokeStyle = 'white';
   ctx.strokeRect(20, 60, 104, 14);
 
   ctx.fillStyle = 'grey';
   ctx.fillRect(20, 80, 104, 14);
   ctx.fillStyle = 'magenta';
-  ctx.fillRect(22, 82, state.resources.food, 10);
+  const foodWidth = (state.resources.food / state.maxResource) * 100;
+  ctx.fillRect(22, 82, foodWidth, 10);
   ctx.strokeStyle = 'white';
   ctx.strokeRect(20, 80, 104, 14);
 
@@ -283,6 +286,41 @@ export function draw() {
     20,
     canvas.height - 20
   );
+
+  if (state.showRadar) {
+    const size = state.radarSize;
+    const radius = state.radarRadius;
+    const rx = canvas.width - size - 20;
+    const ry = 20;
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(rx, ry, size, size);
+    ctx.strokeStyle = 'white';
+    ctx.strokeRect(rx, ry, size, size);
+    ctx.fillStyle = 'cyan';
+    ctx.fillRect(rx + size / 2 - 2, ry + size / 2 - 2, 4, 4);
+    state.radarTargets = [];
+    const systems = getNearbySystems(state, radius);
+    for (const s of systems) {
+      for (const p of s.planets) {
+        const angle = p.phase + state.tick * p.speed;
+        const px = s.x + Math.cos(angle) * p.orbit;
+        const py = s.y + Math.sin(angle) * p.orbit;
+        const dx = (px - state.playerX) / radius;
+        const dy = (py - state.playerY) / radius;
+        if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) {
+          const sx = rx + size / 2 + dx * size / 2;
+          const sy = ry + size / 2 + dy * size / 2;
+          ctx.fillStyle = 'orange';
+          ctx.beginPath();
+          ctx.arc(sx, sy, 3, 0, Math.PI * 2);
+          ctx.fill();
+          state.radarTargets.push({ sx, sy, x: px, y: py });
+        }
+      }
+    }
+  } else {
+    state.radarTargets = [];
+  }
 
   requestAnimationFrame(draw);
 }

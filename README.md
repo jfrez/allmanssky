@@ -7,11 +7,13 @@ Movement has inertia, so you'll drift through space unless you counter-thrust.
 Enemy ships spawn at random and will fire at you. Press **Space** or click the
 mouse to shoot back. Each planet and enemy uses a unique procedurally created
 texture.
-¡
+Press **M** to open a small radar that shows nearby planets. Clicking a planet
+on the radar instantly warps your ship to its location.
 
 Planets belong to solar systems orbiting colorful stars. Their gravity pulls on
 the player, and landing fully recharges your health. Some worlds also replenish
-fuel, oxygen and food, which slowly run out as you explore. The game code is
+fuel, oxygen and food, which slowly run out as you explore. Fuel capacity is now
+1000 times larger for long journeys. The game code is
 split into small ES modules inside the `modules` folder for clarity. Health and
 resource bars from 0&ndash;100% are shown in the upper left, along with your
 current X,Y coordinates. The map is infinite, so wander as far as you like. An
