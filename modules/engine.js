@@ -2,6 +2,8 @@ import { state, ctx, canvas } from './state.js';
 import { generatePlanetTexture, generateShipTexture } from './textures.js';
 import { drawStarfieldTile, getNearbySystems } from './world.js';
 
+const ENEMY_SPAWN_FRAMES = 60 * 60 * 5; // spawn roughly every 5 minutes
+
 export function shoot() {
   if (state.weaponHeat >= state.maxHeat) return;
   const angle = Math.atan2(
@@ -32,7 +34,9 @@ function spawnEnemy() {
 export function update() {
   state.tick += 1;
   state.weaponHeat = Math.max(0, state.weaponHeat - 0.5);
-  if (Math.random() < 0.02) spawnEnemy();
+  if (state.tick > 0 && state.tick % ENEMY_SPAWN_FRAMES === 0) {
+    spawnEnemy();
+  }
 
   const orientation = Math.atan2(
     state.mouseY - canvas.height / 2,
@@ -130,6 +134,9 @@ export function update() {
 
       state.playerX += (dxs / distStar) * strength;
       state.playerY += (dys / distStar) * strength;
+      if (distStar < s.size) {
+        state.playerHealth = Math.max(0, state.playerHealth - 1);
+      }
     }
     for (const p of s.planets) {
       const angle = p.phase + state.tick * p.speed;
