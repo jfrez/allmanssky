@@ -7,7 +7,6 @@ Movement has inertia, so you'll drift through space unless you counter-thrust.
 Enemy ships spawn at random and will fire at you. Press **Space** or click the
 mouse to shoot back. Each planet and enemy uses a unique procedurally created
 texture.
-¡
 
 Planets belong to solar systems orbiting colorful stars. Their gravity pulls on
 the player, and landing fully recharges your health. Some worlds also replenish
