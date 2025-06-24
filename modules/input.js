@@ -24,6 +24,7 @@ function setKey(key, val) {
     case 'D':
       state.keys.right = val;
       break;
+    }
   }
 }
 
