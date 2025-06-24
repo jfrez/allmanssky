@@ -30,7 +30,9 @@ export function getStarSystem(gx, gy, tileSize) {
     y: gy * tileSize + rng() * tileSize,
     size: rng() * 100 + 450, // around 500 units wide
     hue: rng() * 60 + 30,
-    planets: []
+    gx,
+    gy,
+    planets: [],
   };
   const count = Math.floor(rng() * 4);
   for (let i = 0; i < count; i++) {
@@ -38,7 +40,10 @@ export function getStarSystem(gx, gy, tileSize) {
     const size = rng() * 20 + 90; // around 100 unit planets
     const speed = rng() * 0.0005 + 0.0002;
     const phase = rng() * Math.PI * 2;
+    const hasVendor = rng() > 0.5;
+    const basePrice = Math.floor(rng() * 40 + 10);
     star.planets.push({
+      index: i,
       orbit,
       size,
       speed,
@@ -48,7 +53,10 @@ export function getStarSystem(gx, gy, tileSize) {
         fuel: rng() > 0.5,
         oxygen: rng() > 0.5,
         food: rng() > 0.5
-      }
+      },
+      vendor: hasVendor
+        ? { buyPrice: basePrice, sellPrice: Math.floor(basePrice * 0.8) }
+        : null,
     });
   }
   return star;

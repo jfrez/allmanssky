@@ -3,9 +3,9 @@
 Features from No Man's Sky to consider implementing:
 
 - [ ] Trading with alien species and economies
-  - [ ] Create planetary vendors and space stations that buy and sell goods
-  - [ ] Add a currency system and fluctuating prices based on supply/demand
-  - [ ] Random cargo missions that reward valuable items
+  - [x] Create planetary vendors and space stations that buy and sell goods
+  - [x] Add a currency system and fluctuating prices based on supply/demand
+  - [x] Random cargo missions that reward valuable items
 - [ ] Base building on planets
   - [ ] Allow players to place and rotate building parts on terrain
   - [ ] Require harvesting resources such as metal and carbon
