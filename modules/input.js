@@ -36,6 +36,7 @@ function handleKeyDown(e) {
   }
 }
 
+
 function handleKeyUp(e) {
   setKey(e.key, false);
 }
@@ -59,6 +60,7 @@ function handleRadarClick(e) {
     }
   }
   return false;
+
 }
 
 export function setupInput(shoot) {
@@ -72,6 +74,7 @@ export function setupInput(shoot) {
   });
   canvas.addEventListener('click', e => {
     if (!handleRadarClick(e)) {
+
       shootFunc();
     }
   });
