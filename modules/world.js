@@ -28,15 +28,15 @@ export function getStarSystem(gx, gy, tileSize) {
   const star = {
     x: gx * tileSize + rng() * tileSize,
     y: gy * tileSize + rng() * tileSize,
-    size: rng() * 15 + 5,
+    size: rng() * 100 + 450, // around 500 units wide
     hue: rng() * 60 + 30,
     planets: []
   };
   const count = Math.floor(rng() * 4);
   for (let i = 0; i < count; i++) {
-    const orbit = star.size + rng() * 120 + 40;
-    const size = rng() * 10 + 5;
-    const speed = rng() * 0.002 + 0.001;
+    const orbit = star.size + rng() * 400 + 200;
+    const size = rng() * 20 + 90; // around 100 unit planets
+    const speed = rng() * 0.0005 + 0.0002;
     const phase = rng() * Math.PI * 2;
     star.planets.push({
       orbit,
