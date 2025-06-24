@@ -7,9 +7,9 @@ Movement has inertia, so you'll drift through space unless you counter-thrust.
 
 Enemy ships appear very rarely (roughly one every five minutes) and will fire
 at you. Press **Space** or click the mouse to shoot back. Each planet and enemy
-uses a unique procedurally created texture.
-Press **M** to open a small radar that shows nearby planets. Clicking a planet
-on the radar instantly warps your ship to its location.
+uses a unique procedurally created texture. A radar is always visible in the
+upper-right corner showing nearby planets. Clicking a planet on the radar
+instantly warps your ship to its location.
 
 Planets belong to solar systems orbiting colorful stars. Planets are about 100
 times the size of your ship, while stars are around 500 times larger. Their
