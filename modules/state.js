@@ -35,5 +35,4 @@ export const state = {
   radarSize: 150,
   radarRadius: 3000,
   radarTargets: [],
-
 };
