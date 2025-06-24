@@ -24,6 +24,15 @@ function setKey(key, val) {
     case 'D':
       state.keys.right = val;
       break;
+    }
+  }
+}
+
+function handleKeyDown(e) {
+  if (e.key === ' ') {
+    shootFunc();
+  } else {
+    setKey(e.key, true);
   }
 }
 
@@ -37,6 +46,7 @@ function handleKeyDown(e) {
   }
 }
 
+
 function handleKeyUp(e) {
   setKey(e.key, false);
 }
@@ -47,6 +57,7 @@ function handleRadarClick(e) {
   const ry = 20;
   if (e.offsetX < rx || e.offsetX > rx + radarSize || e.offsetY < ry || e.offsetY > ry + radarSize) {
     return;
+
   }
   for (const t of radarTargets) {
     const dx = e.offsetX - t.sx;
@@ -60,6 +71,7 @@ function handleRadarClick(e) {
       break;
     }
   }
+
 }
 
 export function setupInput(shoot) {
@@ -75,6 +87,7 @@ export function setupInput(shoot) {
     if (state.showRadar) {
       handleRadarClick(e);
     } else {
+
       shootFunc();
     }
   });

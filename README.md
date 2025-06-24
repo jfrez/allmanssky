@@ -10,12 +10,14 @@ uses a unique procedurally created texture.
 Press **M** to open a small radar that shows nearby planets. Clicking a planet
 on the radar instantly warps your ship to its location.
 
+
 Planets belong to solar systems orbiting colorful stars. Planets are about 100
 times the size of your ship, while stars are around 500 times larger. Their
 gravity pulls on the player so you can land on planets to refuel and heal, but
 touching a star will slowly damage your ship. Some worlds also replenish fuel,
 oxygen and food, which slowly run out as you explore. Fuel capacity is now 1000
 times larger for long journeys. The game code is
+
 split into small ES modules inside the `modules` folder for clarity. Health and
 resource bars from 0&ndash;100% are shown in the upper left, along with your
 current X,Y coordinates. The map is infinite, so wander as far as you like. An
