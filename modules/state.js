@@ -31,7 +31,7 @@ export const state = {
   mouseX: canvas.width / 2,
   mouseY: canvas.height / 2,
   keys: { up: false, down: false, left: false, right: false },
-  showRadar: false,
+  showRadar: true,
   radarSize: 150,
   radarRadius: 3000,
   radarTargets: [],
