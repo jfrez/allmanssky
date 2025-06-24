@@ -30,6 +30,9 @@ function setKey(key, val) {
 function handleKeyDown(e) {
   if (e.key === ' ') {
     shootFunc();
+  } else if (e.key === 'm' || e.key === 'M') {
+    state.showRadar = !state.showRadar;
+
   } else {
     setKey(e.key, true);
   }
@@ -38,6 +41,28 @@ function handleKeyDown(e) {
 function handleKeyUp(e) {
   setKey(e.key, false);
 }
+
+function handleRadarClick(e) {
+  const { radarSize, radarTargets } = state;
+  const rx = canvas.width - radarSize - 20;
+  const ry = 20;
+  if (e.offsetX < rx || e.offsetX > rx + radarSize || e.offsetY < ry || e.offsetY > ry + radarSize) {
+    return;
+  }
+  for (const t of radarTargets) {
+    const dx = e.offsetX - t.sx;
+    const dy = e.offsetY - t.sy;
+    if (dx * dx + dy * dy < 25) {
+      state.playerX = t.x;
+      state.playerY = t.y;
+      state.playerVX = 0;
+      state.playerVY = 0;
+      state.showRadar = false;
+      break;
+    }
+  }
+}
+
 
 export function setupInput(shoot) {
   shootFunc = shoot;
@@ -48,5 +73,11 @@ export function setupInput(shoot) {
     state.mouseX = e.offsetX;
     state.mouseY = e.offsetY;
   });
-  canvas.addEventListener('click', shootFunc);
+  canvas.addEventListener('click', e => {
+    if (state.showRadar) {
+      handleRadarClick(e);
+    } else {
+      shootFunc();
+    }
+  });
 }
