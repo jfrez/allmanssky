@@ -32,6 +32,7 @@ function handleKeyDown(e) {
     shootFunc();
   } else if (e.key === 'm' || e.key === 'M') {
     state.showRadar = !state.showRadar;
+
   } else {
     setKey(e.key, true);
   }
@@ -61,6 +62,7 @@ function handleRadarClick(e) {
     }
   }
 }
+
 
 export function setupInput(shoot) {
   shootFunc = shoot;

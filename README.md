@@ -10,6 +10,7 @@ texture.
 Press **M** to open a small radar that shows nearby planets. Clicking a planet
 on the radar instantly warps your ship to its location.
 
+
 Planets belong to solar systems orbiting colorful stars. Their gravity pulls on
 the player, and landing fully recharges your health. Some worlds also replenish
 fuel, oxygen and food, which slowly run out as you explore. Fuel capacity is now
