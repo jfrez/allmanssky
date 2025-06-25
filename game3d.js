@@ -3,12 +3,15 @@ import * as THREE from 'https://unpkg.com/three@0.158.0/build/three.module.js';
 let scene, camera, renderer, ship;
 const velocity = new THREE.Vector3();
 const keys = {};
+const bullets = [];
+const enemies = [];
+let enemySpawnTimer = 0;
+
 
 const tileSize = 2000;
 const loadedSystems = new Map();
 const starfield = new THREE.Group();
 const clock = new THREE.Clock();
-
 
 init();
 animate();
@@ -92,7 +95,10 @@ function init() {
   scene.add(starfield);
 
   window.addEventListener('resize', onWindowResize);
-  document.addEventListener('keydown', e => (keys[e.code] = true));
+  document.addEventListener('keydown', e => {
+    keys[e.code] = true;
+    if (e.code === 'Space') shoot();
+  });
   document.addEventListener('keyup', e => (keys[e.code] = false));
 
 }
@@ -111,6 +117,33 @@ function getForwardVector() {
 function getRightVector() {
   return new THREE.Vector3(1, 0, 0).applyQuaternion(ship.quaternion);
 }
+
+function shoot() {
+  const geometry = new THREE.SphereGeometry(0.1, 6, 6);
+  const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.copy(ship.position);
+  scene.add(mesh);
+  const vel = getForwardVector().multiplyScalar(50);
+  bullets.push({ mesh, vel, life: 5 });
+}
+
+function spawnEnemy() {
+  const dir = new THREE.Vector3(
+    THREE.MathUtils.randFloatSpread(1),
+    THREE.MathUtils.randFloatSpread(1),
+    THREE.MathUtils.randFloatSpread(1)
+  ).normalize();
+  const distance = 200;
+  const pos = ship.position.clone().addScaledVector(dir, distance);
+  const geometry = new THREE.ConeGeometry(0.6, 1.5, 8);
+  const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.copy(pos);
+  scene.add(mesh);
+  enemies.push({ mesh, vel: new THREE.Vector3() });
+}
+
 
 function updateSystems() {
   const px = ship.position.x;
@@ -193,6 +226,43 @@ function animate() {
   velocity.multiplyScalar(0.995);
 
   starfield.position.copy(ship.position);
+
+  enemySpawnTimer += dt;
+  if (enemySpawnTimer > 300) {
+    spawnEnemy();
+    enemySpawnTimer = 0;
+  }
+
+  for (const b of bullets) {
+    b.mesh.position.addScaledVector(b.vel, dt);
+    b.life -= dt;
+  }
+  bullets.forEach((b, i) => {
+    if (b.life <= 0) {
+      scene.remove(b.mesh);
+      bullets.splice(i, 1);
+    }
+  });
+
+  for (const e of enemies) {
+    const toShip = ship.position.clone().sub(e.mesh.position).normalize();
+    e.vel.addScaledVector(toShip, dt * 5);
+    e.mesh.position.addScaledVector(e.vel, dt);
+    e.mesh.lookAt(ship.position);
+  }
+  enemies.forEach((e, ei) => {
+    for (let bi = bullets.length - 1; bi >= 0; bi--) {
+      const b = bullets[bi];
+      if (b.mesh.position.distanceTo(e.mesh.position) < 1) {
+        scene.remove(e.mesh);
+        scene.remove(b.mesh);
+        enemies.splice(ei, 1);
+        bullets.splice(bi, 1);
+        break;
+      }
+    }
+  });
+
 
   updateSystems();
   for (const sys of loadedSystems.values()) {
