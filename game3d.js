@@ -7,6 +7,7 @@ const bullets = [];
 const enemies = [];
 let enemySpawnTimer = 0;
 
+
 const tileSize = 2000;
 const loadedSystems = new Map();
 const starfield = new THREE.Group();
@@ -14,6 +15,7 @@ const clock = new THREE.Clock();
 
 init();
 animate();
+
 
 function mulberry32(a) {
   return function() {
@@ -56,6 +58,7 @@ function getStarSystem(gx, gy, gz) {
   return sys;
 }
 
+
 function init() {
   const canvas = document.getElementById('game');
   renderer = new THREE.WebGLRenderer({ canvas });
@@ -97,6 +100,7 @@ function init() {
     if (e.code === 'Space') shoot();
   });
   document.addEventListener('keyup', e => (keys[e.code] = false));
+
 }
 
 function onWindowResize() {
@@ -104,6 +108,7 @@ function onWindowResize() {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
+
 
 function getForwardVector() {
   return new THREE.Vector3(0, 0, -1).applyQuaternion(ship.quaternion);
@@ -138,6 +143,7 @@ function spawnEnemy() {
   scene.add(mesh);
   enemies.push({ mesh, vel: new THREE.Vector3() });
 }
+
 
 function updateSystems() {
   const px = ship.position.x;
@@ -257,6 +263,7 @@ function animate() {
     }
   });
 
+
   updateSystems();
   for (const sys of loadedSystems.values()) {
     if (!sys) continue;
@@ -272,6 +279,7 @@ function animate() {
 
   const camOffset = forward.clone().multiplyScalar(-5).add(new THREE.Vector3(0, 2, 0));
   camera.position.copy(ship.position).add(camOffset);
+
   camera.lookAt(ship.position);
 
   renderer.render(scene, camera);
