@@ -132,6 +132,7 @@ export function placeBuilding() {
   return false;
 }
 
+
 export function update() {
   state.tick += 1;
   if (state.messageTimer > 0) state.messageTimer -= 1;

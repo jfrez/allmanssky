@@ -35,10 +35,12 @@ function handleKeyDown(e) {
     placeBuilding();
   } else if (e.key === 'r' || e.key === 'R') {
     state.buildRotation = (state.buildRotation + 90) % 360;
+
   } else {
     setKey(e.key, true);
   }
 }
+
 
 function handleKeyUp(e) {
   setKey(e.key, false);
@@ -63,6 +65,7 @@ function handleRadarClick(e) {
     }
   }
   return false;
+
 }
 
 export function setupInput(shoot) {
