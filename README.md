@@ -6,6 +6,7 @@ uses a unique procedurally created texture. A small radar overlay appears in the
 upper-right corner showing nearby planets from a top-down view. Clicking a dot
 on the radar instantly warps your ship above that world.
 
+
 Some planets host alien traders. Landing on a vendor world automatically
 exchanges Ore for credits at prices that vary per planet. Traders may also
 offer randomized cargo delivery missions that pay credits on completion.

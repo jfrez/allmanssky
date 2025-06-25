@@ -16,6 +16,7 @@ const state = {
   buildings: [],
 };
 
+
 const tileSize = 2000;
 const loadedSystems = new Map();
 const starfield = new THREE.Group();
@@ -26,8 +27,10 @@ const radarTargets = [];
 const radarSize = 150;
 const radarRadius = 1000;
 
+
 init();
 animate();
+
 
 function mulberry32(a) {
   return function() {
@@ -62,6 +65,7 @@ function getStarSystem(gx, gy, gz) {
     const basePrice = Math.floor(rng() * 40 + 10);
     sys.planets.push({
       index: i,
+
       orbit: sys.size + rng() * 400 + 200,
       size: rng() * 20 + 90,
       speed: rng() * 0.0005 + 0.0002,
@@ -76,10 +80,12 @@ function getStarSystem(gx, gy, gz) {
         rng() > 0.5
           ? { buyPrice: basePrice, sellPrice: Math.floor(basePrice * 0.8) }
           : null,
+
     });
   }
   return sys;
 }
+
 
 function init() {
   const canvas = document.getElementById('game');
@@ -129,6 +135,7 @@ function init() {
     if (e.code === 'KeyB') placeBuilding();
   });
   document.addEventListener('keyup', e => (keys[e.code] = false));
+
 }
 
 function onWindowResize() {
@@ -138,6 +145,7 @@ function onWindowResize() {
   hud.width = window.innerWidth;
   hud.height = window.innerHeight;
 }
+
 
 function getForwardVector() {
   return new THREE.Vector3(0, 0, -1).applyQuaternion(ship.quaternion);
@@ -183,6 +191,7 @@ function placeBuilding() {
   }
 }
 
+
 function spawnEnemy() {
   const dir = new THREE.Vector3(
     THREE.MathUtils.randFloatSpread(1),
@@ -198,6 +207,7 @@ function spawnEnemy() {
   scene.add(mesh);
   enemies.push({ mesh, vel: new THREE.Vector3() });
 }
+
 
 function updateSystems() {
   const px = ship.position.x;
@@ -382,6 +392,7 @@ function animate() {
     state.health = Math.max(0, state.health - 0.1 * dt * 60);
   }
 
+
   enemySpawnTimer += dt;
   if (enemySpawnTimer > 300) {
     spawnEnemy();
@@ -457,6 +468,7 @@ function animate() {
 
   const camOffset = forward.clone().multiplyScalar(-5).add(new THREE.Vector3(0, 2, 0));
   camera.position.copy(ship.position).add(camOffset);
+
   camera.lookAt(ship.position);
 
   renderer.render(scene, camera);
