@@ -97,7 +97,13 @@ function saveBuildings() {
   localStorage.setItem('buildings', JSON.stringify(state.buildings));
 }
 
-export function placeBuilding() {
+export function toggleLanding() {
+  if (state.isLanded) {
+    state.isLanded = false;
+    state.message = 'Taking off';
+    state.messageTimer = 120;
+    return true;
+  }
   const systems = getNearbySystems(state, 300);
   for (const s of systems) {
     for (const p of s.planets) {
@@ -106,28 +112,107 @@ export function placeBuilding() {
       const py = s.y + Math.sin(angle) * p.orbit;
       const dist = Math.hypot(px - state.playerX, py - state.playerY);
       if (dist < p.size + 12) {
-        if (state.inventory.ore < 10) {
-          state.message = 'Need 10 ore to build';
-          state.messageTimer = 180;
-          return false;
+        state.isLanded = true;
+        state.landedGX = s.gx;
+        state.landedGY = s.gy;
+        state.landedPlanetIndex = p.index;
+        state.playerX = px;
+        state.playerY = py;
+        state.playerVX = 0;
+        state.playerVY = 0;
+        if (p.supplies.fuel) state.resources.fuel = state.maxFuel;
+        if (p.supplies.oxygen) state.resources.oxygen = state.maxResource;
+        if (p.supplies.food) state.resources.food = state.maxResource;
+        if (p.vendor && state.messageTimer === 0) {
+          tradeWithVendor(p.vendor);
+          checkMissionCompletion(s, p);
+          maybeStartMission(s, p);
         }
-        state.inventory.ore -= 10;
-        state.buildings.push({
-          gx: s.gx,
-          gy: s.gy,
-          planetIndex: p.index,
-          x: state.playerX,
-          y: state.playerY,
-          rot: state.buildRotation,
-        });
-        saveBuildings();
-        state.message = 'Placed building module';
-        state.messageTimer = 180;
+        state.message = 'Landed - press E to take off';
+        state.messageTimer = 120;
         return true;
       }
     }
   }
-  state.message = 'Must be landed on a planet';
+  state.message = 'No planet to land on';
+  state.messageTimer = 120;
+  return false;
+}
+
+export function harvestResource() {
+  if (!state.isLanded) {
+    state.message = 'Land first with E';
+    state.messageTimer = 120;
+    return false;
+  }
+  const systems = getNearbySystems(state, 300);
+  for (const s of systems) {
+    if (s.gx !== state.landedGX || s.gy !== state.landedGY) continue;
+    for (const p of s.planets) {
+      if (p.index !== state.landedPlanetIndex) continue;
+      if (p.resources) {
+        let harvested = false;
+        if (p.resources.metal) {
+          state.inventory.metal += 1;
+          harvested = true;
+        }
+        if (p.resources.carbon) {
+          state.inventory.carbon += 1;
+          harvested = true;
+        }
+        if (harvested) {
+          state.message = 'Harvested resources';
+          state.messageTimer = 120;
+          return true;
+        }
+      }
+    }
+  }
+  state.message = 'No resources here';
+  state.messageTimer = 120;
+  return false;
+}
+
+export function placeBuilding() {
+  if (!state.isLanded) {
+    state.message = 'Must be landed on a planet';
+    state.messageTimer = 180;
+    return false;
+  }
+  const systems = getNearbySystems(state, 300);
+  for (const s of systems) {
+    if (s.gx === state.landedGX && s.gy === state.landedGY) {
+      for (const p of s.planets) {
+        if (p.index === state.landedPlanetIndex) {
+          if (
+            state.inventory.ore < 10 ||
+            state.inventory.metal < 5 ||
+            state.inventory.carbon < 5
+          ) {
+            state.message = 'Need 10 ore, 5 metal, 5 carbon to build';
+            state.messageTimer = 180;
+            return false;
+          }
+          state.inventory.ore -= 10;
+          state.inventory.metal -= 5;
+          state.inventory.carbon -= 5;
+          state.buildings.push({
+            gx: s.gx,
+            gy: s.gy,
+            planetIndex: p.index,
+            x: state.playerX,
+            y: state.playerY,
+            rot: state.buildRotation,
+          });
+          saveBuildings();
+          state.message = 'Placed building module';
+          state.messageTimer = 180;
+          return true;
+        }
+      }
+    }
+  }
+  state.message = 'No place to build';
   state.messageTimer = 180;
   return false;
 }
@@ -148,25 +233,27 @@ export function update() {
   state.angle = orientation;
 
   const thrust = 0.2;
-  if (state.keys.up && state.resources.fuel > 0) {
-    state.playerVX += Math.cos(orientation) * thrust;
-    state.playerVY += Math.sin(orientation) * thrust;
-    state.resources.fuel = Math.max(0, state.resources.fuel - 0.5);
-  }
-  if (state.keys.down && state.resources.fuel > 0) {
-    state.playerVX -= Math.cos(orientation) * thrust;
-    state.playerVY -= Math.sin(orientation) * thrust;
-    state.resources.fuel = Math.max(0, state.resources.fuel - 0.5);
-  }
-  if (state.keys.left && state.resources.fuel > 0) {
-    state.playerVX -= Math.sin(orientation) * thrust;
-    state.playerVY += Math.cos(orientation) * thrust;
-    state.resources.fuel = Math.max(0, state.resources.fuel - 0.5);
-  }
-  if (state.keys.right && state.resources.fuel > 0) {
-    state.playerVX += Math.sin(orientation) * thrust;
-    state.playerVY -= Math.cos(orientation) * thrust;
-    state.resources.fuel = Math.max(0, state.resources.fuel - 0.5);
+  if (!state.isLanded) {
+    if (state.keys.up && state.resources.fuel > 0) {
+      state.playerVX += Math.cos(orientation) * thrust;
+      state.playerVY += Math.sin(orientation) * thrust;
+      state.resources.fuel = Math.max(0, state.resources.fuel - 0.5);
+    }
+    if (state.keys.down && state.resources.fuel > 0) {
+      state.playerVX -= Math.cos(orientation) * thrust;
+      state.playerVY -= Math.sin(orientation) * thrust;
+      state.resources.fuel = Math.max(0, state.resources.fuel - 0.5);
+    }
+    if (state.keys.left && state.resources.fuel > 0) {
+      state.playerVX -= Math.sin(orientation) * thrust;
+      state.playerVY += Math.cos(orientation) * thrust;
+      state.resources.fuel = Math.max(0, state.resources.fuel - 0.5);
+    }
+    if (state.keys.right && state.resources.fuel > 0) {
+      state.playerVX += Math.sin(orientation) * thrust;
+      state.playerVY -= Math.cos(orientation) * thrust;
+      state.resources.fuel = Math.max(0, state.resources.fuel - 0.5);
+    }
   }
 
 
@@ -232,7 +319,7 @@ export function update() {
     const dys = s.y - state.playerY;
     const distStar = Math.hypot(dxs, dys);
     const starInfluence = 200 + s.size;
-    if (distStar < starInfluence && distStar > 0) {
+    if (!state.isLanded && distStar < starInfluence && distStar > 0) {
       const strength = (1 - distStar / starInfluence) * 0.1;
 
       state.playerX += (dxs / distStar) * strength;
@@ -248,7 +335,14 @@ export function update() {
       const dx = px - state.playerX;
       const dy = py - state.playerY;
       const dist = Math.hypot(dx, dy);
-      if (dist < p.size + 12) {
+      if (
+        state.isLanded &&
+        s.gx === state.landedGX &&
+        s.gy === state.landedGY &&
+        p.index === state.landedPlanetIndex
+      ) {
+        state.playerX = px;
+        state.playerY = py;
         landed = true;
         if (p.supplies.fuel) state.resources.fuel = state.maxFuel;
         if (p.supplies.oxygen) state.resources.oxygen = state.maxResource;
@@ -258,20 +352,29 @@ export function update() {
           checkMissionCompletion(s, p);
           maybeStartMission(s, p);
         }
-      }
-      const influence = 150 + p.size;
-      if (dist < influence && dist > 0) {
-        const strength = (1 - dist / influence) * 0.2;
+      } else if (!state.isLanded) {
+        const influence = 150 + p.size;
+        if (dist < influence && dist > 0) {
+          const strength = (1 - dist / influence) * 0.2;
 
-        state.playerX += (dx / dist) * strength;
-        state.playerY += (dy / dist) * strength;
+          state.playerX += (dx / dist) * strength;
+          state.playerY += (dy / dist) * strength;
+        }
       }
     }
   }
+  if (state.isLanded && !landed) {
+    state.isLanded = false;
+  }
   if (landed) state.playerHealth = 100;
 
-  state.playerX += state.playerVX;
-  state.playerY += state.playerVY;
+  if (!state.isLanded) {
+    state.playerX += state.playerVX;
+    state.playerY += state.playerVY;
+  } else {
+    state.playerVX = 0;
+    state.playerVY = 0;
+  }
   state.playerVX *= 0.99;
   state.playerVY *= 0.99;
 
@@ -315,6 +418,13 @@ export function draw() {
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(px, py, p.size + 1, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      if (p.resources && (p.resources.metal || p.resources.carbon)) {
+        ctx.strokeStyle = 'yellow';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(px, py, p.size + 4, 0, Math.PI * 2);
         ctx.stroke();
       }
     }
@@ -412,7 +522,7 @@ export function draw() {
     canvas.height - 20
   );
   ctx.fillText(
-    `Credits: ${state.credits} Ore: ${state.inventory.ore}`,
+    `Credits: ${state.credits} Ore: ${state.inventory.ore} Metal: ${state.inventory.metal} Carbon: ${state.inventory.carbon}`,
     20,
     canvas.height - 36
   );
@@ -423,6 +533,11 @@ export function draw() {
       canvas.height - 52
     );
   }
+  ctx.fillText(
+    'Keys: WASD move Space shoot E land/take off H harvest B build R rotate',
+    20,
+    canvas.height - 68
+  );
   if (state.messageTimer > 0) {
     ctx.fillStyle = 'yellow';
     const text = state.message;
