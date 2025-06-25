@@ -1,9 +1,10 @@
 # Procedural Space Explorer
 
-This project is a small browser game written in pure JavaScript. It draws an
-endless galaxy and generates textures for every planet, ship and the starry
-background on the fly. Use the arrow keys or WASD to fire your thrusters.
-Movement has inertia, so you'll drift through space unless you counter-thrust.
+This project is a small browser game written in pure JavaScript. It now uses
+WebGL to render a simple **3D** galaxy using the `three.js` library. Use the
+arrow keys to rotate and thrust your ship through space. A procedurally
+generated starfield surrounds the player and movement has inertia, so you'll
+drift unless you counter-thrust.
 Enemy ships appear very rarely (roughly one every five minutes) and will fire
 at you. Press **Space** or click the mouse to shoot back. Each planet and enemy
 uses a unique procedurally created texture. A radar is always visible in the
