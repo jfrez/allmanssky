@@ -39,6 +39,8 @@ export const state = {
   inventory: { ore: 0, metal: 0, carbon: 0 },
   maxInventory: 50,
   isLanded: false,
+  landing: null,
+
   landedGX: null,
   landedGY: null,
   landedPlanetIndex: null,

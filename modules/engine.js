@@ -1,6 +1,6 @@
 import { state, ctx, canvas } from './state.js';
 import { generatePlanetTexture, generateShipTexture } from './textures.js';
-import { drawStarfieldTile, getNearbySystems } from './world.js';
+import { drawStarfieldTile, getNearbySystems, findNearestStar } from './world.js';
 
 const ENEMY_SPAWN_FRAMES = 60 * 60 * 5; // spawn roughly every 5 minutes
 
@@ -104,35 +104,38 @@ export function toggleLanding() {
     state.messageTimer = 120;
     return true;
   }
-  const systems = getNearbySystems(state, 300);
+  if (state.landing) return false;
+  const systems = getNearbySystems(state, 1000);
+  let closest = null;
+
   for (const s of systems) {
     for (const p of s.planets) {
       const angle = p.phase + state.tick * p.speed;
       const px = s.x + Math.cos(angle) * p.orbit;
       const py = s.y + Math.sin(angle) * p.orbit;
       const dist = Math.hypot(px - state.playerX, py - state.playerY);
-      if (dist < p.size + 12) {
-        state.isLanded = true;
-        state.landedGX = s.gx;
-        state.landedGY = s.gy;
-        state.landedPlanetIndex = p.index;
-        state.playerX = px;
-        state.playerY = py;
-        state.playerVX = 0;
-        state.playerVY = 0;
-        if (p.supplies.fuel) state.resources.fuel = state.maxFuel;
-        if (p.supplies.oxygen) state.resources.oxygen = state.maxResource;
-        if (p.supplies.food) state.resources.food = state.maxResource;
-        if (p.vendor && state.messageTimer === 0) {
-          tradeWithVendor(p.vendor);
-          checkMissionCompletion(s, p);
-          maybeStartMission(s, p);
-        }
-        state.message = 'Landed - press E to take off';
-        state.messageTimer = 120;
-        return true;
+      if (!closest || dist < closest.dist) {
+        closest = { s, p, px, py, dist };
       }
     }
+  }
+  if (closest && closest.dist <= closest.p.size * 1.1) {
+    const { s, p, px, py } = closest;
+    const dx = state.playerX - px;
+    const dy = state.playerY - py;
+    const ang = Math.atan2(dy, dx);
+    state.landing = {
+      targetX: px + Math.cos(ang) * p.size,
+      targetY: py + Math.sin(ang) * p.size,
+      frames: 30,
+      star: s,
+      planet: p,
+    };
+    state.playerVX = 0;
+    state.playerVY = 0;
+    state.message = 'Landing...';
+    state.messageTimer = 60;
+    return true;
   }
   state.message = 'No planet to land on';
   state.messageTimer = 120;
@@ -231,6 +234,33 @@ export function update() {
     state.mouseX - canvas.width / 2
   );
   state.angle = orientation;
+
+  if (state.landing) {
+    const l = state.landing;
+    state.playerX += (l.targetX - state.playerX) * 0.2;
+    state.playerY += (l.targetY - state.playerY) * 0.2;
+    if (--l.frames <= 0) {
+      state.playerX = l.targetX;
+      state.playerY = l.targetY;
+      state.isLanded = true;
+      state.landedGX = l.star.gx;
+      state.landedGY = l.star.gy;
+      state.landedPlanetIndex = l.planet.index;
+      if (l.planet.supplies.fuel) state.resources.fuel = state.maxFuel;
+      if (l.planet.supplies.oxygen) state.resources.oxygen = state.maxResource;
+      if (l.planet.supplies.food) state.resources.food = state.maxResource;
+      if (l.planet.vendor && state.messageTimer === 0) {
+        tradeWithVendor(l.planet.vendor);
+        checkMissionCompletion(l.star, l.planet);
+        maybeStartMission(l.star, l.planet);
+      }
+      state.landing = null;
+      state.message = 'Landed - press E to take off';
+      state.messageTimer = 120;
+    }
+    return;
+  }
+
 
   const thrust = 0.2;
   if (!state.isLanded) {
@@ -411,7 +441,7 @@ export function draw() {
       const angle = p.phase + state.tick * p.speed;
       const px = s.x + Math.cos(angle) * p.orbit - offsetX;
       const py = s.y + Math.sin(angle) * p.orbit - offsetY;
-      const img = generatePlanetTexture(p.seed, p.size);
+      const img = generatePlanetTexture(p.seed, p.size, p.resources);
       ctx.drawImage(img, px - p.size, py - p.size);
       if (p.supplies.fuel || p.supplies.oxygen || p.supplies.food) {
         ctx.strokeStyle = 'cyan';
@@ -433,6 +463,45 @@ export function draw() {
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate(state.angle + Math.PI / 2);
+  if (!state.isLanded && !state.landing) {
+    ctx.fillStyle = 'orange';
+    if (state.keys.up) {
+      const len = 8 + Math.random() * 4;
+      ctx.beginPath();
+      ctx.moveTo(-3, 10);
+      ctx.lineTo(0, 10 + len);
+      ctx.lineTo(3, 10);
+      ctx.closePath();
+      ctx.fill();
+    }
+    if (state.keys.down) {
+      const len = 6 + Math.random() * 3;
+      ctx.beginPath();
+      ctx.moveTo(-2, -10);
+      ctx.lineTo(0, -10 - len);
+      ctx.lineTo(2, -10);
+      ctx.closePath();
+      ctx.fill();
+    }
+    if (state.keys.left) {
+      const len = 6 + Math.random() * 3;
+      ctx.beginPath();
+      ctx.moveTo(10, -2);
+      ctx.lineTo(10 + len, 0);
+      ctx.lineTo(10, 2);
+      ctx.closePath();
+      ctx.fill();
+    }
+    if (state.keys.right) {
+      const len = 6 + Math.random() * 3;
+      ctx.beginPath();
+      ctx.moveTo(-10, -2);
+      ctx.lineTo(-10 - len, 0);
+      ctx.lineTo(-10, 2);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
   ctx.fillStyle = 'cyan';
   ctx.beginPath();
   ctx.moveTo(0, -12);
@@ -588,6 +657,32 @@ export function draw() {
           }
         }
       }
+    }
+    const nearest = findNearestStar(state.playerX, state.playerY);
+    if (nearest) {
+      let dx = (nearest.x - state.playerX) / radius;
+      let dy = (nearest.y - state.playerY) / radius;
+      const mag = Math.hypot(dx, dy);
+      if (mag > 1) {
+        dx /= mag;
+        dy /= mag;
+      }
+      const sx = rx + size / 2 + dx * size / 2;
+      const sy = ry + size / 2 + dy * size / 2;
+      const ang = Math.atan2(dy, dx);
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.moveTo(sx + Math.cos(ang) * 6, sy + Math.sin(ang) * 6);
+      ctx.lineTo(
+        sx + Math.cos(ang + Math.PI * 0.75) * 6,
+        sy + Math.sin(ang + Math.PI * 0.75) * 6
+      );
+      ctx.lineTo(
+        sx + Math.cos(ang - Math.PI * 0.75) * 6,
+        sy + Math.sin(ang - Math.PI * 0.75) * 6
+      );
+      ctx.closePath();
+      ctx.fill();
     }
   } else {
     state.radarTargets = [];
