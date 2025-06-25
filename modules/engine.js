@@ -31,8 +31,110 @@ function spawnEnemy() {
   });
 }
 
+function tradeWithVendor(vendor) {
+  if (!vendor) return;
+  let msg = '';
+  if (state.inventory.ore > 0) {
+    const earnings = state.inventory.ore * vendor.sellPrice;
+    state.credits += earnings;
+    msg += `Sold ${state.inventory.ore} ore for ${earnings}c. `;
+    state.inventory.ore = 0;
+  }
+  const space = state.maxInventory - state.inventory.ore;
+  const affordable = Math.floor(state.credits / vendor.buyPrice);
+  const amount = Math.min(space, affordable);
+  if (amount > 0) {
+    state.inventory.ore += amount;
+    state.credits -= amount * vendor.buyPrice;
+    msg += `Bought ${amount} ore for ${amount * vendor.buyPrice}c.`;
+  }
+  if (msg) {
+    state.message = msg.trim();
+    state.messageTimer = 180; // about 3 seconds
+  }
+}
+
+function checkMissionCompletion(star, planet) {
+  const m = state.mission;
+  if (
+    m &&
+    star.gx === m.gx &&
+    star.gy === m.gy &&
+    planet.index === m.planetIndex
+  ) {
+    state.credits += m.reward;
+    state.message = `Mission complete! Earned ${m.reward}c`;
+    state.messageTimer = 240;
+    state.mission = null;
+  }
+}
+
+function maybeStartMission(currentStar, currentPlanet) {
+  if (state.mission || Math.random() > 0.3) return;
+  const systems = getNearbySystems(state, state.radarRadius * 2);
+  const choices = [];
+  for (const s of systems) {
+    for (const p of s.planets) {
+      if (p.vendor && (s.gx !== currentStar.gx || s.gy !== currentStar.gy || p.index !== currentPlanet.index)) {
+        choices.push({ s, p });
+      }
+    }
+  }
+  if (choices.length === 0) return;
+  const dest = choices[Math.floor(Math.random() * choices.length)];
+  const reward = Math.floor(200 + Math.random() * 300);
+  state.mission = {
+    gx: dest.s.gx,
+    gy: dest.s.gy,
+    planetIndex: dest.p.index,
+    reward,
+  };
+  state.message = `Cargo mission: deliver goods to (${dest.s.gx},${dest.s.gy}) planet ${dest.p.index} for ${reward}c`;
+  state.messageTimer = 240;
+}
+
+function saveBuildings() {
+  localStorage.setItem('buildings', JSON.stringify(state.buildings));
+}
+
+export function placeBuilding() {
+  const systems = getNearbySystems(state, 300);
+  for (const s of systems) {
+    for (const p of s.planets) {
+      const angle = p.phase + state.tick * p.speed;
+      const px = s.x + Math.cos(angle) * p.orbit;
+      const py = s.y + Math.sin(angle) * p.orbit;
+      const dist = Math.hypot(px - state.playerX, py - state.playerY);
+      if (dist < p.size + 12) {
+        if (state.inventory.ore < 10) {
+          state.message = 'Need 10 ore to build';
+          state.messageTimer = 180;
+          return false;
+        }
+        state.inventory.ore -= 10;
+        state.buildings.push({
+          gx: s.gx,
+          gy: s.gy,
+          planetIndex: p.index,
+          x: state.playerX,
+          y: state.playerY,
+          rot: state.buildRotation,
+        });
+        saveBuildings();
+        state.message = 'Placed building module';
+        state.messageTimer = 180;
+        return true;
+      }
+    }
+  }
+  state.message = 'Must be landed on a planet';
+  state.messageTimer = 180;
+  return false;
+}
+
 export function update() {
   state.tick += 1;
+  if (state.messageTimer > 0) state.messageTimer -= 1;
   state.weaponHeat = Math.max(0, state.weaponHeat - 0.5);
   if (state.tick > 0 && state.tick % ENEMY_SPAWN_FRAMES === 0) {
     spawnEnemy();
@@ -150,6 +252,11 @@ export function update() {
         if (p.supplies.fuel) state.resources.fuel = state.maxFuel;
         if (p.supplies.oxygen) state.resources.oxygen = state.maxResource;
         if (p.supplies.food) state.resources.food = state.maxResource;
+        if (p.vendor && state.messageTimer === 0) {
+          tradeWithVendor(p.vendor);
+          checkMissionCompletion(s, p);
+          maybeStartMission(s, p);
+        }
       }
       const influence = 150 + p.size;
       if (dist < influence && dist > 0) {
@@ -224,6 +331,16 @@ export function draw() {
   ctx.fill();
   ctx.restore();
 
+  for (const base of state.buildings) {
+    const bx = base.x - offsetX;
+    const by = base.y - offsetY;
+    ctx.save();
+    ctx.translate(bx, by);
+    ctx.rotate((base.rot * Math.PI) / 180);
+    ctx.fillStyle = 'brown';
+    ctx.fillRect(-10, -10, 20, 20);
+    ctx.restore();
+  }
 
   for (const e of state.enemies) {
     const img = generateShipTexture(e.seed);
@@ -293,6 +410,25 @@ export function draw() {
     20,
     canvas.height - 20
   );
+  ctx.fillText(
+    `Credits: ${state.credits} Ore: ${state.inventory.ore}`,
+    20,
+    canvas.height - 36
+  );
+  if (state.mission) {
+    ctx.fillText(
+      `Mission: (${state.mission.gx},${state.mission.gy}) planet ${state.mission.planetIndex} reward ${state.mission.reward}c`,
+      20,
+      canvas.height - 52
+    );
+  }
+  if (state.messageTimer > 0) {
+    ctx.fillStyle = 'yellow';
+    const text = state.message;
+    const w = ctx.measureText(text).width;
+    ctx.fillText(text, canvas.width / 2 - w / 2, 50);
+    ctx.fillStyle = 'white';
+  }
 
   if (state.showRadar) {
     const size = state.radarSize;
@@ -322,6 +458,18 @@ export function draw() {
           ctx.arc(sx, sy, 3, 0, Math.PI * 2);
           ctx.fill();
           state.radarTargets.push({ sx, sy, x: px, y: py });
+        }
+      }
+      for (const b of state.buildings) {
+        if (b.gx === s.gx && b.gy === s.gy) {
+          const dx = (b.x - state.playerX) / radius;
+          const dy = (b.y - state.playerY) / radius;
+          if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) {
+            const sx = rx + size / 2 + dx * size / 2;
+            const sy = ry + size / 2 + dy * size / 2;
+            ctx.fillStyle = 'purple';
+            ctx.fillRect(sx - 2, sy - 2, 4, 4);
+          }
         }
       }
     }

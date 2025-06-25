@@ -1,38 +1,27 @@
 import { canvas, state } from './state.js';
+import { placeBuilding } from './engine.js';
 
 let shootFunc = () => {};
 
 function setKey(key, val) {
-  switch (key) {
-    case 'ArrowUp':
-    case 'w':
-    case 'W':
-      state.keys.up = val;
-      break;
-    case 'ArrowDown':
-    case 's':
-    case 'S':
-      state.keys.down = val;
-      break;
-    case 'ArrowLeft':
-    case 'a':
-    case 'A':
-      state.keys.left = val;
-      break;
-    case 'ArrowRight':
-    case 'd':
-    case 'D':
-      state.keys.right = val;
-      break;
-    }
+  if (key === 'ArrowUp' || key === 'w' || key === 'W') {
+    state.keys.up = val;
+  } else if (key === 'ArrowDown' || key === 's' || key === 'S') {
+    state.keys.down = val;
+  } else if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
+    state.keys.left = val;
+  } else if (key === 'ArrowRight' || key === 'd' || key === 'D') {
+    state.keys.right = val;
   }
 }
 
 function handleKeyDown(e) {
   if (e.key === ' ') {
     shootFunc();
-  } else if (e.key === 'm' || e.key === 'M') {
-    state.showRadar = !state.showRadar;
+  } else if (e.key === 'b' || e.key === 'B') {
+    placeBuilding();
+  } else if (e.key === 'r' || e.key === 'R') {
+    state.buildRotation = (state.buildRotation + 90) % 360;
   } else {
     setKey(e.key, true);
   }
@@ -47,7 +36,7 @@ function handleRadarClick(e) {
   const rx = canvas.width - radarSize - 20;
   const ry = 20;
   if (e.offsetX < rx || e.offsetX > rx + radarSize || e.offsetY < ry || e.offsetY > ry + radarSize) {
-    return;
+    return false;
   }
   for (const t of radarTargets) {
     const dx = e.offsetX - t.sx;
@@ -57,10 +46,10 @@ function handleRadarClick(e) {
       state.playerY = t.y;
       state.playerVX = 0;
       state.playerVY = 0;
-      state.showRadar = false;
-      break;
+      return true;
     }
   }
+  return false;
 }
 
 export function setupInput(shoot) {
@@ -73,9 +62,7 @@ export function setupInput(shoot) {
     state.mouseY = e.offsetY;
   });
   canvas.addEventListener('click', e => {
-    if (state.showRadar) {
-      handleRadarClick(e);
-    } else {
+    if (!handleRadarClick(e)) {
       shootFunc();
     }
   });
