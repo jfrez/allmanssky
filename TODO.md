@@ -7,9 +7,9 @@ Features from No Man's Sky to consider implementing:
   - [x] Add a currency system and fluctuating prices based on supply/demand
   - [x] Random cargo missions that reward valuable items
 - [ ] Base building on planets
-  - [ ] Allow players to place and rotate building parts on terrain
+  - [x] Allow players to place and rotate building parts on terrain
   - [ ] Require harvesting resources such as metal and carbon
-  - [ ] Persist bases and allow returning to them later
+  - [x] Persist bases and allow returning to them later
 - [ ] Expanding and managing a space fleet
   - [ ] Recruit AI-controlled ships to follow or patrol
   - [ ] Assign missions to fleet members for passive income

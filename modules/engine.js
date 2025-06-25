@@ -93,6 +93,46 @@ function maybeStartMission(currentStar, currentPlanet) {
   state.messageTimer = 240;
 }
 
+function saveBuildings() {
+  localStorage.setItem('buildings', JSON.stringify(state.buildings));
+}
+
+export function placeBuilding() {
+  const systems = getNearbySystems(state, 300);
+  for (const s of systems) {
+    for (const p of s.planets) {
+      const angle = p.phase + state.tick * p.speed;
+      const px = s.x + Math.cos(angle) * p.orbit;
+      const py = s.y + Math.sin(angle) * p.orbit;
+      const dist = Math.hypot(px - state.playerX, py - state.playerY);
+      if (dist < p.size + 12) {
+        if (state.inventory.ore < 10) {
+          state.message = 'Need 10 ore to build';
+          state.messageTimer = 180;
+          return false;
+        }
+        state.inventory.ore -= 10;
+        state.buildings.push({
+          gx: s.gx,
+          gy: s.gy,
+          planetIndex: p.index,
+          x: state.playerX,
+          y: state.playerY,
+          rot: state.buildRotation,
+        });
+        saveBuildings();
+        state.message = 'Placed building module';
+        state.messageTimer = 180;
+        return true;
+      }
+    }
+  }
+  state.message = 'Must be landed on a planet';
+  state.messageTimer = 180;
+  return false;
+}
+
+
 export function update() {
   state.tick += 1;
   if (state.messageTimer > 0) state.messageTimer -= 1;
@@ -292,6 +332,16 @@ export function draw() {
   ctx.fill();
   ctx.restore();
 
+  for (const base of state.buildings) {
+    const bx = base.x - offsetX;
+    const by = base.y - offsetY;
+    ctx.save();
+    ctx.translate(bx, by);
+    ctx.rotate((base.rot * Math.PI) / 180);
+    ctx.fillStyle = 'brown';
+    ctx.fillRect(-10, -10, 20, 20);
+    ctx.restore();
+  }
 
   for (const e of state.enemies) {
     const img = generateShipTexture(e.seed);
@@ -409,6 +459,18 @@ export function draw() {
           ctx.arc(sx, sy, 3, 0, Math.PI * 2);
           ctx.fill();
           state.radarTargets.push({ sx, sy, x: px, y: py });
+        }
+      }
+      for (const b of state.buildings) {
+        if (b.gx === s.gx && b.gy === s.gy) {
+          const dx = (b.x - state.playerX) / radius;
+          const dy = (b.y - state.playerY) / radius;
+          if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) {
+            const sx = rx + size / 2 + dx * size / 2;
+            const sy = ry + size / 2 + dy * size / 2;
+            ctx.fillStyle = 'purple';
+            ctx.fillRect(sx - 2, sy - 2, 4, 4);
+          }
         }
       }
     }

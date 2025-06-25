@@ -1,4 +1,5 @@
 import { canvas, state } from './state.js';
+import { placeBuilding } from './engine.js';
 
 let shootFunc = () => {};
 
@@ -24,13 +25,17 @@ function setKey(key, val) {
     case 'D':
       state.keys.right = val;
       break;
-    }
   }
 }
 
 function handleKeyDown(e) {
   if (e.key === ' ') {
     shootFunc();
+  } else if (e.key === 'b' || e.key === 'B') {
+    placeBuilding();
+  } else if (e.key === 'r' || e.key === 'R') {
+    state.buildRotation = (state.buildRotation + 90) % 360;
+
   } else {
     setKey(e.key, true);
   }

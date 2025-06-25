@@ -14,6 +14,11 @@ Some planets host alien traders. Landing on a vendor world automatically
 exchanges Ore for credits at prices that vary per planet. Traders may also
 offer randomized cargo delivery missions that pay credits on completion.
 
+While landed, press **B** to place a base module if you have at least 10 Ore.
+Press **R** to rotate the module before building. Bases are saved locally so
+you can return to them later and appear as brown squares on planets and on the
+radar.
+
 
 Planets belong to solar systems orbiting colorful stars. Planets are about 100
 times the size of your ship, while stars are around 500 times larger. Their
