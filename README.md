@@ -1,6 +1,6 @@
 # Procedural Space Explorer
 
-This project is a small browser game written in pure JavaScript. It now uses WebGL to render a simple **3D** galaxy using the `three.js` library loaded from a CDN. Fly with **W/A/S/D** to move, **R/F** to ascend or descend and use the arrow keys to rotate. A procedurally generated starfield surrounds you so the universe feels endless.
+This project is a small browser game written in pure JavaScript. It now uses WebGL to render a simple **3D** galaxy using the `three.js` library bundled locally. Fly with **W/A/S/D** to move, **R/F** to ascend or descend and use the arrow keys to rotate. A procedurally generated starfield surrounds you so the universe feels endless.
 Enemy ships occasionally spawn and chase you through space. Press **Space** to fire lasers from your ship. Each planet and enemy
 uses a unique procedurally created texture. A small radar overlay appears in the
 upper-right corner showing nearby planets from a top-down view. Clicking a dot
@@ -31,9 +31,5 @@ introductory animation shows your ship diving into a black hole before you spawn
 at a random set of coordinates. Weapons heat up as you fire and will temporarily
 lock if they reach 100%, so watch the heat meter and let them cool off before
 blasting away again.
-Simply open `index.html` in your browser to play the game locally. The canvas
-fills the window for a full-screen experience. Modern
-browsers load the ES modules correctly when the page is opened from disk. If
-you prefer running a local server instead, any simple web server such as
-`python3 -m http.server` will work just as well.
+Simply open `index.html` through a small local web server for best compatibility. The canvas fills the window for a full-screen experience. For example, run `python3 -m http.server` in this directory and open http://localhost:8000/index.html.
 
