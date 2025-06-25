@@ -4,7 +4,6 @@ This project is a small browser game written in pure JavaScript. It draws an
 endless galaxy and generates textures for every planet, ship and the starry
 background on the fly. Use the arrow keys or WASD to fire your thrusters.
 Movement has inertia, so you'll drift through space unless you counter-thrust.
-
 Enemy ships appear very rarely (roughly one every five minutes) and will fire
 at you. Press **Space** or click the mouse to shoot back. Each planet and enemy
 uses a unique procedurally created texture. A radar is always visible in the
@@ -14,6 +13,7 @@ instantly warps your ship to its location.
 Some planets host alien traders. Landing on a vendor world automatically
 exchanges Ore for credits at prices that vary per planet. Traders may also
 offer randomized cargo delivery missions that pay credits on completion.
+
 
 Planets belong to solar systems orbiting colorful stars. Planets are about 100
 times the size of your ship, while stars are around 500 times larger. Their
