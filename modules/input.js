@@ -4,27 +4,14 @@ import { placeBuilding } from './engine.js';
 let shootFunc = () => {};
 
 function setKey(key, val) {
-  switch (key) {
-    case 'ArrowUp':
-    case 'w':
-    case 'W':
-      state.keys.up = val;
-      break;
-    case 'ArrowDown':
-    case 's':
-    case 'S':
-      state.keys.down = val;
-      break;
-    case 'ArrowLeft':
-    case 'a':
-    case 'A':
-      state.keys.left = val;
-      break;
-    case 'ArrowRight':
-    case 'd':
-    case 'D':
-      state.keys.right = val;
-      break;
+  if (key === 'ArrowUp' || key === 'w' || key === 'W') {
+    state.keys.up = val;
+  } else if (key === 'ArrowDown' || key === 's' || key === 'S') {
+    state.keys.down = val;
+  } else if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
+    state.keys.left = val;
+  } else if (key === 'ArrowRight' || key === 'd' || key === 'D') {
+    state.keys.right = val;
   }
 }
 
