@@ -1,6 +1,7 @@
 # Procedural Space Explorer
 
 This project is a small browser game written in pure JavaScript. It now uses WebGL to render a simple **3D** galaxy using the `three.js` library loaded from a CDN. Fly with **W/A/S/D** to move, **R/F** to ascend or descend and use the arrow keys to rotate. A procedurally generated starfield surrounds you so the universe feels endless.
+
 Enemy ships appear very rarely (roughly one every five minutes) and will fire
 at you. Press **Space** or click the mouse to shoot back. Each planet and enemy
 uses a unique procedurally created texture. A radar is always visible in the
