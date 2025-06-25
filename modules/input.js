@@ -74,7 +74,6 @@ export function setupInput(shoot) {
   });
   canvas.addEventListener('click', e => {
     if (!handleRadarClick(e)) {
-
       shootFunc();
     }
   });
