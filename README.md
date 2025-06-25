@@ -12,7 +12,9 @@ uses a unique procedurally created texture. A radar is always visible in the
 upper-right corner showing nearby planets. Clicking a planet on the radar
 instantly warps your ship to its location.
 
+
 Some planets host alien traders. Press **E** near a planet to land. A short animation moves the ship down to the surface when you are within ten percent of its radius. Landing on a vendor world automatically
+
 exchanges Ore for credits at prices that vary per planet. Traders may also
 offer randomized cargo delivery missions that pay credits on completion.
 
@@ -24,6 +26,7 @@ radar.
 
 
 Planets belong to solar systems orbiting colorful stars. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced roughly 25,000 units apart. Planet colors hint at what resources they hold. Their
+
 gravity pulls on the player. Press **E** to land on planets to refuel and heal, but
 touching a star will slowly damage your ship. Some worlds also replenish fuel,
 oxygen and food, which slowly run out as you explore. Fuel capacity is now 1000
