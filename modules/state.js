@@ -43,4 +43,5 @@ export const state = {
   mission: null,
   buildRotation: 0,
   buildings: JSON.parse(localStorage.getItem('buildings') || '[]'),
+
 };

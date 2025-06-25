@@ -4,6 +4,7 @@ import { placeBuilding } from './engine.js';
 let shootFunc = () => {};
 
 function setKey(key, val) {
+
   if (key === 'ArrowUp' || key === 'w' || key === 'W') {
     state.keys.up = val;
   } else if (key === 'ArrowDown' || key === 's' || key === 'S') {
@@ -12,6 +13,7 @@ function setKey(key, val) {
     state.keys.left = val;
   } else if (key === 'ArrowRight' || key === 'd' || key === 'D') {
     state.keys.right = val;
+
   }
 }
 
@@ -22,10 +24,12 @@ function handleKeyDown(e) {
     placeBuilding();
   } else if (e.key === 'r' || e.key === 'R') {
     state.buildRotation = (state.buildRotation + 90) % 360;
+
   } else {
     setKey(e.key, true);
   }
 }
+
 
 function handleKeyUp(e) {
   setKey(e.key, false);
@@ -50,6 +54,7 @@ function handleRadarClick(e) {
     }
   }
   return false;
+
 }
 
 export function setupInput(shoot) {
