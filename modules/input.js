@@ -1,5 +1,5 @@
 import { canvas, state } from './state.js';
-import { placeBuilding } from './engine.js';
+import { placeBuilding, harvestResource, toggleLanding } from './engine.js';
 
 let shootFunc = () => {};
 
@@ -20,6 +20,10 @@ function handleKeyDown(e) {
     shootFunc();
   } else if (e.key === 'b' || e.key === 'B') {
     placeBuilding();
+  } else if (e.key === 'e' || e.key === 'E') {
+    toggleLanding();
+  } else if (e.key === 'h' || e.key === 'H') {
+    harvestResource();
   } else if (e.key === 'r' || e.key === 'R') {
     state.buildRotation = (state.buildRotation + 90) % 360;
 

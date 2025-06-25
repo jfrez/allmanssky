@@ -54,6 +54,10 @@ export function getStarSystem(gx, gy, tileSize) {
         oxygen: rng() > 0.5,
         food: rng() > 0.5
       },
+      resources: {
+        metal: rng() > 0.5,
+        carbon: rng() > 0.5
+      },
       vendor: hasVendor
         ? { buyPrice: basePrice, sellPrice: Math.floor(basePrice * 0.8) }
         : null,
