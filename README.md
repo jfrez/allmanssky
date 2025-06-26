@@ -36,8 +36,7 @@ times larger for long journeys. The game code is
 split into small ES modules inside the `modules` folder for clarity. Health and
 resource bars from 0&ndash;100% are shown in the upper left, along with your
 current X,Y coordinates. Key bindings and inventory counts appear at the bottom left.
-
-On touch devices an on-screen joystick rotates the ship while large buttons for each thruster and action make it easy to play on phones. Pinch zooming and page scrolling are disabled so the canvas stays fixed in place.
+On touch devices an on-screen joystick rotates the ship while smaller thruster buttons sit around a central **Fire** button. Land, Build and Harvest controls are lined up along the bottom so the layout feels natural on phones. Pinch zooming and page scrolling are disabled so the canvas stays fixed in place.
 
 The map is infinite, so wander as far as you like. An
 introductory animation shows your ship diving into a black hole before you spawn
