@@ -2,6 +2,7 @@ import { state, ctx, canvas, resetState } from './state.js';
 import { generatePlanetTexture, generateShipTexture } from './textures.js';
 import { drawStarfieldTile, getNearbySystems, findNearestStar, ensurePlanetTurrets, ensureStarNear } from './world.js';
 
+
 import { playIntro } from './intro.js';
 
 const ENEMY_SPAWN_FRAMES = 60 * 30; // spawn roughly every 30 seconds
@@ -44,6 +45,28 @@ function spawnEnemy() {
     maxHealth: hp,
     seed: Math.floor(Math.random() * 1e9),
   });
+}
+
+function ensurePlanetTurrets() {
+  const systems = getNearbySystems(state, state.radarRadius * 2);
+  for (const s of systems) {
+    for (const p of s.planets) {
+      const exists = state.planetTurrets.some(
+        t => t.gx === s.gx && t.gy === s.gy && t.planetIndex === p.index
+      );
+      if (!exists) {
+        state.planetTurrets.push({
+          gx: s.gx,
+          gy: s.gy,
+          planetIndex: p.index,
+          offset: 0,
+          cooldown: 0,
+          x: 0,
+          y: 0,
+        });
+      }
+    }
+  }
 }
 
 function tradeWithVendor(vendor) {
@@ -210,7 +233,7 @@ export function harvestResource() {
   return false;
 }
 
-export function placeBuilding() {
+export function placeBuilding(type = 'base') {
   if (!state.isLanded) {
     state.message = 'Must be landed on a planet';
     state.messageTimer = 180;
@@ -240,6 +263,8 @@ export function placeBuilding() {
             x: state.playerX,
             y: state.playerY,
             rot: state.buildRotation,
+            type,
+            cooldown: 0,
           });
           saveBuildings();
           state.message = 'Placed building module';
@@ -265,6 +290,92 @@ export function update() {
   ensureStarNear(state.playerX, state.playerY);
   if (state.tick > 0 && state.tick % ENEMY_SPAWN_FRAMES === 0) {
     spawnEnemy();
+  }
+  ensurePlanetTurrets();
+
+  for (const t of state.planetTurrets) {
+    const star = getStarSystem(t.gx, t.gy);
+    if (!star) continue;
+    const p = star.planets[t.planetIndex];
+    const angle = p.phase + state.tick * p.speed;
+    const px = star.x + Math.cos(angle) * p.orbit;
+    const py = star.y + Math.sin(angle) * p.orbit;
+    const ta = angle + t.offset;
+    t.x = px + Math.cos(ta) * (p.size + 40);
+    t.y = py + Math.sin(ta) * (p.size + 40);
+    if (t.cooldown > 0) t.cooldown -= 1;
+    let target = null;
+    for (const e of state.enemies) {
+      const dx = e.x - t.x;
+      const dy = e.y - t.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 600) {
+        target = { dx, dy, dist };
+        break;
+      }
+    }
+    if (target && t.cooldown <= 0) {
+      const bulletSpeed = 8;
+      state.bullets.push({
+        x: t.x,
+        y: t.y,
+        vx: (target.dx / target.dist) * bulletSpeed,
+        vy: (target.dy / target.dist) * bulletSpeed,
+      });
+      t.cooldown = 20;
+    }
+  }
+
+  for (const base of state.buildings) {
+    if (base.type === 'turret') {
+      if (base.cooldown > 0) base.cooldown -= 1;
+      let target = null;
+      for (const e of state.enemies) {
+        const dx = e.x - base.x;
+        const dy = e.y - base.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 600) {
+          target = { dx, dy, dist };
+          break;
+        }
+      }
+      if (target && base.cooldown <= 0) {
+        const bulletSpeed = 8;
+        state.bullets.push({
+          x: base.x,
+          y: base.y,
+          vx: (target.dx / target.dist) * bulletSpeed,
+          vy: (target.dy / target.dist) * bulletSpeed,
+        });
+        base.cooldown = 20;
+      }
+    }
+  }
+
+  for (const base of state.buildings) {
+    if (base.type === 'turret') {
+      if (base.cooldown > 0) base.cooldown -= 1;
+      let target = null;
+      for (const e of state.enemies) {
+        const dx = e.x - base.x;
+        const dy = e.y - base.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 600) {
+          target = { dx, dy, dist };
+          break;
+        }
+      }
+      if (target && base.cooldown <= 0) {
+        const bulletSpeed = 8;
+        state.bullets.push({
+          x: base.x,
+          y: base.y,
+          vx: (target.dx / target.dist) * bulletSpeed,
+          vy: (target.dy / target.dist) * bulletSpeed,
+        });
+        base.cooldown = 20;
+      }
+    }
   }
 
   const orientation = Math.atan2(
@@ -666,8 +777,34 @@ export function draw() {
     ctx.save();
     ctx.translate(bx, by);
     ctx.rotate((base.rot * Math.PI) / 180);
-    ctx.fillStyle = 'brown';
-    ctx.fillRect(-10, -10, 20, 20);
+    if (base.type === 'turret') {
+      ctx.fillStyle = 'grey';
+      ctx.beginPath();
+      ctx.moveTo(0, -10);
+      ctx.lineTo(10, 10);
+      ctx.lineTo(-10, 10);
+      ctx.closePath();
+      ctx.fill();
+    } else {
+      ctx.fillStyle = 'brown';
+      ctx.fillRect(-10, -10, 20, 20);
+    }
+    ctx.restore();
+  }
+
+  for (const t of state.planetTurrets) {
+    const bx = t.x - offsetX;
+    const by = t.y - offsetY;
+    ctx.save();
+    ctx.translate(bx, by);
+    ctx.fillStyle = 'grey';
+    ctx.beginPath();
+    ctx.moveTo(0, -10);
+    ctx.lineTo(10, 10);
+    ctx.lineTo(-10, 10);
+    ctx.closePath();
+    ctx.fill();
+
     ctx.restore();
   }
 
@@ -806,7 +943,20 @@ export function draw() {
           if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) {
             const sx = rx + size / 2 + dx * size / 2;
             const sy = ry + size / 2 + dy * size / 2;
-            ctx.fillStyle = 'purple';
+            ctx.fillStyle = b.type === 'turret' ? 'red' : 'purple';
+            ctx.fillRect(sx - 2, sy - 2, 4, 4);
+          }
+        }
+      }
+      for (const t of state.planetTurrets) {
+        if (t.gx === s.gx && t.gy === s.gy) {
+          const dx = (t.x - state.playerX) / radius;
+          const dy = (t.y - state.playerY) / radius;
+          if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) {
+            const sx = rx + size / 2 + dx * size / 2;
+            const sy = ry + size / 2 + dy * size / 2;
+            ctx.fillStyle = 'red';
+
             ctx.fillRect(sx - 2, sy - 2, 4, 4);
           }
         }

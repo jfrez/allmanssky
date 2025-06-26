@@ -50,12 +50,14 @@ export const state = {
   landedPlanetIndex: null,
   isDead: false,
   isRestarting: false,
+
   message: '',
   messageTimer: 0,
   mission: null,
   buildRotation: 0,
   buildings: JSON.parse(localStorage.getItem('buildings') || '[]'),
   turrets: {},
+
 
 };
 
@@ -97,5 +99,6 @@ export function resetState() {
     mission: null,
     buildRotation: 0,
     turrets: {},
+
   });
 }

@@ -2,6 +2,7 @@ import { getRandom, randomNormal, mulberry32 } from './util.js';
 import { state } from './state.js';
 
 
+
 export const STAR_SPACING = 500;
 
 const starfieldTiles = new Map();
