@@ -1,6 +1,6 @@
 import { getRandom, randomNormal } from './util.js';
 
-export const STAR_SPACING = 10000;
+export const STAR_SPACING = 50000;
 
 
 const starfieldTiles = new Map();

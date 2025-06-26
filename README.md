@@ -10,7 +10,9 @@ Enemy ships now spawn frequently (about one every thirty seconds) and will fire
 at you. Destroying one awards **200 credits**. Press **Space** or click the
 mouse to shoot back. Each planet and enemy
 
-uses a unique procedurally created texture. A radar is always visible in the
+Planets belong to solar systems orbiting colorful stars. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced roughly 50,000 units apart so systems cluster less tightly. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their
+If your ship is destroyed, a random sci-fi message appears for a few seconds and
+then the introduction plays again so you respawn near the nearest star.
 upper-right corner showing nearby planets. Clicking a planet on the radar
 instantly warps your ship to its location.
 
