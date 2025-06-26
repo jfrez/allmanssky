@@ -149,7 +149,8 @@ export function toggleLanding() {
     return true;
   }
   if (state.landing) return false;
-  const systems = getNearbySystems(state, MAX_STAR_DISTANCE);
+  const systems = getNearbySystems(state, MAX_STAR_DISTANCE * 2);
+
   let closest = null;
   for (const s of systems) {
     for (const p of s.planets) {
@@ -188,7 +189,7 @@ export function harvestResource() {
     state.messageTimer = 120;
     return false;
   }
-  const systems = getNearbySystems(state, 300);
+  const systems = getNearbySystems(state, MAX_STAR_DISTANCE * 2);
   for (const s of systems) {
     if (s.gx !== state.landedGX || s.gy !== state.landedGY) continue;
     for (const p of s.planets) {
@@ -222,7 +223,7 @@ export function placeBuilding(type = 'base') {
     state.messageTimer = 180;
     return false;
   }
-  const systems = getNearbySystems(state, 300);
+  const systems = getNearbySystems(state, MAX_STAR_DISTANCE * 2);
   for (const s of systems) {
     if (s.gx === state.landedGX && s.gy === state.landedGY) {
       for (const p of s.planets) {
@@ -429,7 +430,7 @@ export function update() {
     }
   }
 
-    const bulletSystems = getNearbySystems(state, 1000);
+    const bulletSystems = getNearbySystems(state, MAX_STAR_DISTANCE * 2);
     for (let i = state.bullets.length - 1; i >= 0; i--) {
       const b = state.bullets[i];
       b.x += b.vx;
@@ -489,7 +490,7 @@ export function update() {
   }
 
   let landed = false;
-  const systems = getNearbySystems(state, 300);
+  const systems = getNearbySystems(state, MAX_STAR_DISTANCE * 2);
   for (const s of systems) {
     const dxs = s.x - state.playerX;
     const dys = s.y - state.playerY;
