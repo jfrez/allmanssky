@@ -10,7 +10,13 @@ const TURRET_COOLDOWN_FRAMES = 60; // turret fires about once per second
 
 export function shoot() {
   if (state.isOverheated || state.weaponHeat >= state.maxHeat) {
-    if (state.weaponHeat >= state.maxHeat) state.isOverheated = true;
+    if (state.weaponHeat >= state.maxHeat) {
+      state.isOverheated = true;
+      if (state.messageTimer <= 0) {
+        state.message = 'Weapons overheated!';
+        state.messageTimer = 60;
+      }
+    }
     return;
   }
   const angle = Math.atan2(
