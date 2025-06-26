@@ -27,7 +27,7 @@ radar.
 Planets are guarded by 1 to 10 defense turrets depending on their size. These
 turrets can be shot and destroyed, and each shows a small health bar so you can
 see how much damage they've taken. They will open fire whenever you come within
-twice the planet's radius, so approach carefully.
+ten times the planet's radius, so approach carefully.
 
 If you clear a planet's defenses and then land on it for the very first time,
 your ship upgrades. It grows slightly larger and gains an additional pair of

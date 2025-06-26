@@ -437,7 +437,8 @@ export function update() {
         const turrets = ensurePlanetTurrets(s.gx, s.gy, p.index, p.size);
         for (const t of turrets) {
           if (t.cooldown > 0) t.cooldown -= 1;
-          if (dist < p.size * 2 && t.cooldown <= 0) {
+          if (dist < p.size * 10 && t.cooldown <= 0) {
+
             const tx = px + Math.cos(t.angle) * (p.size + 10);
             const ty = py + Math.sin(t.angle) * (p.size + 10);
             const ang = Math.atan2(state.playerY - ty, state.playerX - tx);
@@ -602,18 +603,20 @@ export function draw() {
     if (state.keys.left) {
       const len = 6 + Math.random() * 3;
       ctx.beginPath();
-      ctx.moveTo(10, -2);
-      ctx.lineTo(10 + len, 0);
-      ctx.lineTo(10, 2);
+      ctx.moveTo(-10, -2);
+      ctx.lineTo(-10 - len, 0);
+      ctx.lineTo(-10, 2);
+
       ctx.closePath();
       ctx.fill();
     }
     if (state.keys.right) {
       const len = 6 + Math.random() * 3;
       ctx.beginPath();
-      ctx.moveTo(-10, -2);
-      ctx.lineTo(-10 - len, 0);
-      ctx.lineTo(-10, 2);
+      ctx.moveTo(10, -2);
+      ctx.lineTo(10 + len, 0);
+      ctx.lineTo(10, 2);
+
       ctx.closePath();
       ctx.fill();
     }
