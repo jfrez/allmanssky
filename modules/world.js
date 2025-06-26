@@ -1,6 +1,7 @@
 import { getRandom, randomNormal, mulberry32 } from './util.js';
 import { state } from './state.js';
 
+
 export const STAR_SPACING = 50000;
 
 const starfieldTiles = new Map();
@@ -39,6 +40,10 @@ function createStar(gx, gy, rng) {
       resources: {
         metal: rng() > 0.5,
         carbon: rng() > 0.5,
+      },
+      resources: {
+        metal: rng() > 0.5,
+        carbon: rng() > 0.5
       },
       vendor: hasVendor
         ? { buyPrice: basePrice, sellPrice: Math.floor(basePrice * 0.8) }

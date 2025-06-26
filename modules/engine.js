@@ -1,6 +1,7 @@
 import { state, ctx, canvas, resetState } from './state.js';
 import { generatePlanetTexture, generateShipTexture } from './textures.js';
 import { drawStarfieldTile, getNearbySystems, findNearestStar, ensurePlanetTurrets, ensureStarNear } from './world.js';
+
 import { playIntro } from './intro.js';
 
 const ENEMY_SPAWN_FRAMES = 60 * 30; // spawn roughly every 30 seconds
@@ -121,6 +122,7 @@ function upgradeShip() {
   state.message = 'Ship upgraded with new cannons!';
   state.messageTimer = 180;
 }
+
 
 export function toggleLanding() {
   if (state.isLanded) {
@@ -292,6 +294,7 @@ export function update() {
           upgradeShip();
         }
       }
+
       state.landing = null;
       state.message = 'Landed - press E to take off';
       state.messageTimer = 120;
@@ -556,6 +559,7 @@ export function draw() {
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate(state.angle + Math.PI / 2);
   ctx.scale(state.shipScale, state.shipScale);
+
   if (!state.isLanded && !state.landing) {
     ctx.fillStyle = 'orange';
     if (state.keys.up) {
@@ -599,6 +603,7 @@ export function draw() {
   for (const c of state.cannons) {
     ctx.fillRect(c.x - 1, c.y - 4, 2, 4);
   }
+
   ctx.fillStyle = 'cyan';
   ctx.beginPath();
   ctx.moveTo(0, -12);
