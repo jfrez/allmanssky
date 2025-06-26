@@ -40,6 +40,7 @@ export const state = {
   maxInventory: 50,
   isLanded: false,
   landing: null,
+
   landedGX: null,
   landedGY: null,
   landedPlanetIndex: null,
