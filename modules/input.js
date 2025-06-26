@@ -4,6 +4,7 @@ import { placeBuilding, harvestResource, toggleLanding } from './engine.js';
 let shootFunc = () => {};
 
 function setKey(key, val) {
+
   if (key === 'ArrowUp' || key === 'w' || key === 'W') {
     state.keys.up = val;
   } else if (key === 'ArrowDown' || key === 's' || key === 'S') {
@@ -12,6 +13,7 @@ function setKey(key, val) {
     state.keys.left = val;
   } else if (key === 'ArrowRight' || key === 'd' || key === 'D') {
     state.keys.right = val;
+
   }
 }
 

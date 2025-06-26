@@ -13,6 +13,7 @@ mouse to shoot back. Each planet and enemy
 Planets belong to solar systems orbiting colorful stars. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced roughly 50,000 units apart so systems cluster less tightly. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their
 If your ship is destroyed, a random sci-fi message appears for a few seconds and
 then the introduction plays again so you respawn near the nearest star.
+
 upper-right corner showing nearby planets. Clicking a planet on the radar
 instantly warps your ship to its location.
 
@@ -31,6 +32,7 @@ radar.
 Planets belong to solar systems orbiting colorful stars. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced roughly 10,000 units apart so systems cluster close together. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their
 
 gravity pulls on the player. Press **E** to land on planets to refuel and heal, but
+
 touching a star will slowly damage your ship. Some worlds also replenish fuel,
 oxygen and food, which slowly run out as you explore. Fuel capacity is now 1000
 times larger for long journeys. The game code is
