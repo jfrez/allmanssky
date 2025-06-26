@@ -1,4 +1,6 @@
-import { getRandom } from './util.js';
+import { getRandom, randomNormal } from './util.js';
+
+export const STAR_SPACING = 10000;
 
 const starfieldTiles = new Map();
 
@@ -22,22 +24,22 @@ export function drawStarfieldTile(gx, gy, offsetX, offsetY, ctx, tileSize) {
   ctx.drawImage(img, gx * tileSize - offsetX, gy * tileSize - offsetY);
 }
 
-export function getStarSystem(gx, gy, tileSize) {
+export function getStarSystem(gx, gy) {
   const rng = getRandom(gx, gy);
   if (rng() < 0.97) return null;
   const star = {
-    x: gx * tileSize + rng() * tileSize,
-    y: gy * tileSize + rng() * tileSize,
+    x: gx * STAR_SPACING + rng() * STAR_SPACING,
+    y: gy * STAR_SPACING + rng() * STAR_SPACING,
     size: rng() * 100 + 450, // around 500 units wide
     hue: rng() * 60 + 30,
     gx,
     gy,
     planets: [],
   };
-  const count = Math.floor(rng() * 4);
+  const count = 1 + Math.floor(rng() * 9);
   for (let i = 0; i < count; i++) {
-    const orbit = star.size + rng() * 400 + 200;
-    const size = rng() * 20 + 90; // around 100 unit planets
+    const orbit = star.size + 300 + i * 300 + rng() * 100;
+    const size = Math.max(20, randomNormal(rng, 100, 100));
     const speed = rng() * 0.0005 + 0.0002;
     const phase = rng() * Math.PI * 2;
     const hasVendor = rng() > 0.5;
@@ -54,6 +56,10 @@ export function getStarSystem(gx, gy, tileSize) {
         oxygen: rng() > 0.5,
         food: rng() > 0.5
       },
+      resources: {
+        metal: rng() > 0.5,
+        carbon: rng() > 0.5
+      },
       vendor: hasVendor
         ? { buyPrice: basePrice, sellPrice: Math.floor(basePrice * 0.8) }
         : null,
@@ -63,17 +69,36 @@ export function getStarSystem(gx, gy, tileSize) {
 }
 
 export function getNearbySystems(state, radius) {
-  const { playerX, playerY, tileSize } = state;
+  const { playerX, playerY } = state;
   const systems = [];
-  const startGX = Math.floor((playerX - radius) / tileSize);
-  const startGY = Math.floor((playerY - radius) / tileSize);
-  const endGX = Math.floor((playerX + radius) / tileSize);
-  const endGY = Math.floor((playerY + radius) / tileSize);
+  const startGX = Math.floor((playerX - radius) / STAR_SPACING);
+  const startGY = Math.floor((playerY - radius) / STAR_SPACING);
+  const endGX = Math.floor((playerX + radius) / STAR_SPACING);
+  const endGY = Math.floor((playerY + radius) / STAR_SPACING);
   for (let gx = startGX; gx <= endGX; gx++) {
     for (let gy = startGY; gy <= endGY; gy++) {
-      const sys = getStarSystem(gx, gy, tileSize);
+      const sys = getStarSystem(gx, gy);
       if (sys) systems.push(sys);
     }
   }
   return systems;
+}
+
+export function findNearestStar(x, y, searchRadius = STAR_SPACING * 20) {
+  let closest = null;
+  const startGX = Math.floor((x - searchRadius) / STAR_SPACING);
+  const startGY = Math.floor((y - searchRadius) / STAR_SPACING);
+  const endGX = Math.floor((x + searchRadius) / STAR_SPACING);
+  const endGY = Math.floor((y + searchRadius) / STAR_SPACING);
+  for (let gx = startGX; gx <= endGX; gx++) {
+    for (let gy = startGY; gy <= endGY; gy++) {
+      const sys = getStarSystem(gx, gy);
+      if (!sys) continue;
+      const dist = Math.hypot(sys.x - x, sys.y - y);
+      if (!closest || dist < closest.dist) {
+        closest = { star: sys, dist };
+      }
+    }
+  }
+  return closest ? closest.star : null;
 }
