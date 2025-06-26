@@ -3,14 +3,22 @@ import { mulberry32 } from './util.js';
 const planetTextures = new Map();
 const shipTextures = new Map();
 
-export function generatePlanetTexture(seed, size) {
-  const key = seed + '-' + size;
+export function generatePlanetTexture(seed, size, resources = null) {
+  const key = seed + '-' + size + JSON.stringify(resources);
   if (planetTextures.has(key)) return planetTextures.get(key);
   const c = document.createElement('canvas');
   c.width = c.height = size * 2;
   const g = c.getContext('2d');
   const rng = mulberry32(seed);
-  const hue = rng() * 360;
+  let hue;
+  if (resources) {
+    if (resources.metal && resources.carbon) hue = 210;
+    else if (resources.metal) hue = 40;
+    else if (resources.carbon) hue = 120;
+    else hue = rng() * 360;
+  } else {
+    hue = rng() * 360;
+  }
   g.fillStyle = `hsl(${hue},50%,50%)`;
   g.beginPath();
   g.arc(size, size, size, 0, Math.PI * 2);
