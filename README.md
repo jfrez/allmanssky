@@ -24,7 +24,7 @@ While landed, press **H** on planets with resources to gather Metal and Carbon.
 Press **B** to place a base module if you have 10 Ore, 5 Metal and 5 Carbon.
 Press **R** to rotate the module before building. Bases are saved locally so
 you can return to them later and appear as brown squares on planets and on the
-radar.
+lock if they reach 100%. You must let them cool completely before
 
 Planets are guarded by 1 to 10 defense turrets depending on their size. Each
 turret has between three and ten hit points and displays a tiny health bar so
