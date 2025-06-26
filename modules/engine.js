@@ -309,7 +309,7 @@ export function update() {
       const dx = e.x - t.x;
       const dy = e.y - t.y;
       const dist = Math.hypot(dx, dy);
-      if (dist < 600) {
+      if (dist < p.size * 10) {
         target = { dx, dy, dist };
         break;
       }

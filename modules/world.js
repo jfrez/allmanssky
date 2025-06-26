@@ -1,9 +1,11 @@
 import { getRandom, randomNormal, mulberry32 } from './util.js';
-import { state } from './state.js';
+import { state, canvas } from './state.js';
 
 
 
 export const STAR_SPACING = 500;
+export const MIN_STAR_DISTANCE = 1000;
+export const MAX_STAR_DISTANCE = 2000;
 
 const starfieldTiles = new Map();
 const forcedStars = new Map();
@@ -115,15 +117,26 @@ export function findNearestStar(x, y, searchRadius = STAR_SPACING * 20) {
   return closest ? closest.star : null;
 }
 
-export function ensureStarNear(x, y, radius = STAR_SPACING * 2) {
-  const nearest = findNearestStar(x, y, radius);
-  if (nearest) return nearest;
-  const gx = Math.round(x / STAR_SPACING);
-  const gy = Math.round(y / STAR_SPACING);
+export function ensureStarNear(x, y) {
+  const nearest = findNearestStar(x, y, MAX_STAR_DISTANCE);
+  if (nearest && Math.hypot(nearest.x - x, nearest.y - y) >= MIN_STAR_DISTANCE) {
+    return nearest;
+  }
+
+  const view = Math.max(canvas.width, canvas.height) / 2;
+  const minDist = Math.max(MIN_STAR_DISTANCE, view + 50);
+  const dist = minDist + Math.random() * (MAX_STAR_DISTANCE - minDist);
+  const ang = Math.random() * Math.PI * 2;
+  const nx = x + Math.cos(ang) * dist;
+  const ny = y + Math.sin(ang) * dist;
+  const gx = Math.round(nx / STAR_SPACING);
+  const gy = Math.round(ny / STAR_SPACING);
   const key = `${gx},${gy}`;
   if (forcedStars.has(key)) return forcedStars.get(key);
   const rng = mulberry32((gx * 97467) ^ (gy * 59359));
   const star = createStar(gx, gy, rng);
+  star.x = nx;
+  star.y = ny;
   forcedStars.set(key, star);
   return star;
 }
