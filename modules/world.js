@@ -4,8 +4,9 @@ import { state, canvas } from './state.js';
 
 
 export const STAR_SPACING = 500;
-export const MIN_STAR_DISTANCE = 1000;
-export const MAX_STAR_DISTANCE = 2000;
+export const MIN_STAR_DISTANCE = 4000;
+export const MAX_STAR_DISTANCE = 8000;
+
 
 const starfieldTiles = new Map();
 const forcedStars = new Map();
