@@ -8,11 +8,14 @@ firing. Movement has inertia, so you'll drift through space unless you
 counter-thrust.
 Enemy ships now spawn frequently (about one every thirty seconds) and will fire
 at you. Destroying one awards **200 credits**. Press **Space** or click the
-mouse to shoot back. Each planet and enemy uses a unique procedurally created texture. A radar is always visible in the
+mouse to shoot back. Each planet and enemy
+uses a unique procedurally created texture. A radar is always visible in the
 upper-right corner showing nearby planets. Clicking a planet on the radar
 instantly warps your ship to its location.
 
-Some planets host alien traders. Press **E** near a planet to land. A short animation moves the ship down to the surface when you are within ten percent of its radius. Landing on a vendor world automatically exchanges Ore for credits at prices that vary per planet. Traders may also
+Some planets host alien traders. Press **E** near a planet to land. A short animation moves the ship down to the surface when you are within ten percent of its radius. Landing on a vendor world automatically
+exchanges Ore for credits at prices that vary per planet. Traders may also
+
 offer randomized cargo delivery missions that pay credits on completion.
 
 While landed, press **H** on planets with resources to gather Metal and Carbon.
@@ -25,7 +28,13 @@ Planets are guarded by 1 to 10 defense turrets depending on their size. These
 turrets can be shot and destroyed, and each shows a small health bar so you can
 see how much damage they've taken.
 
-Planets belong to solar systems orbiting colorful stars. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced roughly 50,000 units apart so systems cluster less tightly. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their
+If you clear a planet's defenses and then land on it for the very first time,
+your ship upgrades. It grows slightly larger and gains an additional pair of
+cannons, which are placed symmetrically across the hull. Each upgrade adds more
+firepower, letting you shoot multiple bullets at once.
+
+
+Planets belong to solar systems orbiting colorful stars. Star systems are generated procedurally and the game always spawns one close to your ship. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced roughly 50,000 units apart so systems cluster less tightly. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their
 
 gravity pulls on the player. Press **E** to land on planets to refuel and heal, but
 touching a star will slowly damage your ship. Some worlds also replenish fuel,

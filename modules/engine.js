@@ -1,6 +1,7 @@
 import { state, ctx, canvas, resetState } from './state.js';
 import { generatePlanetTexture, generateShipTexture } from './textures.js';
-import { drawStarfieldTile, getNearbySystems, findNearestStar, ensurePlanetTurrets } from './world.js';
+import { drawStarfieldTile, getNearbySystems, findNearestStar, ensurePlanetTurrets, ensureStarNear } from './world.js';
+
 import { playIntro } from './intro.js';
 
 const ENEMY_SPAWN_FRAMES = 60 * 30; // spawn roughly every 30 seconds
@@ -12,12 +13,19 @@ export function shoot() {
     state.mouseX - canvas.width / 2
   );
   const bulletSpeed = 8;
-  state.bullets.push({
-    x: state.playerX,
-    y: state.playerY,
-    vx: Math.cos(angle) * bulletSpeed,
-    vy: Math.sin(angle) * bulletSpeed,
-  });
+  const rot = state.angle + Math.PI / 2;
+  for (const c of state.cannons) {
+    const ox =
+      (c.x * Math.cos(rot) - c.y * Math.sin(rot)) * state.shipScale;
+    const oy =
+      (c.x * Math.sin(rot) + c.y * Math.cos(rot)) * state.shipScale;
+    state.bullets.push({
+      x: state.playerX + ox,
+      y: state.playerY + oy,
+      vx: Math.cos(angle) * bulletSpeed,
+      vy: Math.sin(angle) * bulletSpeed,
+    });
+  }
   state.weaponHeat = Math.min(state.maxHeat, state.weaponHeat + 20);
 }
 
@@ -105,6 +113,16 @@ function restartGame() {
 function saveBuildings() {
   localStorage.setItem('buildings', JSON.stringify(state.buildings));
 }
+
+function upgradeShip() {
+  state.upgradeLevel += 1;
+  state.shipScale += 0.2;
+  const offset = state.upgradeLevel * 6;
+  state.cannons.push({ x: offset, y: -12 }, { x: -offset, y: -12 });
+  state.message = 'Ship upgraded with new cannons!';
+  state.messageTimer = 180;
+}
+
 
 export function toggleLanding() {
   if (state.isLanded) {
@@ -233,6 +251,7 @@ export function update() {
   state.tick += 1;
   if (state.messageTimer > 0) state.messageTimer -= 1;
   state.weaponHeat = Math.max(0, state.weaponHeat - 0.5);
+  ensureStarNear(state.playerX, state.playerY);
   if (state.tick > 0 && state.tick % ENEMY_SPAWN_FRAMES === 0) {
     spawnEnemy();
   }
@@ -262,6 +281,20 @@ export function update() {
         checkMissionCompletion(l.star, l.planet);
         maybeStartMission(l.star, l.planet);
       }
+      const key = `${l.star.gx},${l.star.gy},${l.planet.index}`;
+      if (!state.visitedPlanets[key]) {
+        state.visitedPlanets[key] = true;
+        const turrets = ensurePlanetTurrets(
+          l.star.gx,
+          l.star.gy,
+          l.planet.index,
+          l.planet.size
+        );
+        if (turrets.length === 0) {
+          upgradeShip();
+        }
+      }
+
       state.landing = null;
       state.message = 'Landed - press E to take off';
       state.messageTimer = 120;
@@ -525,6 +558,8 @@ export function draw() {
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate(state.angle + Math.PI / 2);
+  ctx.scale(state.shipScale, state.shipScale);
+
   if (!state.isLanded && !state.landing) {
     ctx.fillStyle = 'orange';
     if (state.keys.up) {
@@ -564,6 +599,11 @@ export function draw() {
       ctx.fill();
     }
   }
+  ctx.fillStyle = 'grey';
+  for (const c of state.cannons) {
+    ctx.fillRect(c.x - 1, c.y - 4, 2, 4);
+  }
+
   ctx.fillStyle = 'cyan';
   ctx.beginPath();
   ctx.moveTo(0, -12);

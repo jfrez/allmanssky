@@ -1,37 +1,17 @@
 import { getRandom, randomNormal, mulberry32 } from './util.js';
 import { state } from './state.js';
 
+
 export const STAR_SPACING = 50000;
 
 const starfieldTiles = new Map();
+const forcedStars = new Map();
 
-export function drawStarfieldTile(gx, gy, offsetX, offsetY, ctx, tileSize) {
-  const key = `${gx},${gy}`;
-  if (!starfieldTiles.has(key)) {
-    const c = document.createElement('canvas');
-    c.width = c.height = tileSize;
-    const g = c.getContext('2d');
-    const rng = getRandom(gx, gy);
-    g.fillStyle = 'black';
-    g.fillRect(0, 0, tileSize, tileSize);
-    const count = 20;
-    for (let i = 0; i < count; i++) {
-      g.fillStyle = `rgba(255,255,255,${0.5 + rng() * 0.5})`;
-      g.fillRect(rng() * tileSize, rng() * tileSize, 2, 2);
-    }
-    starfieldTiles.set(key, c);
-  }
-  const img = starfieldTiles.get(key);
-  ctx.drawImage(img, gx * tileSize - offsetX, gy * tileSize - offsetY);
-}
-
-export function getStarSystem(gx, gy) {
-  const rng = getRandom(gx, gy);
-  if (rng() < 0.97) return null;
+function createStar(gx, gy, rng) {
   const star = {
     x: gx * STAR_SPACING + rng() * STAR_SPACING,
     y: gy * STAR_SPACING + rng() * STAR_SPACING,
-    size: rng() * 100 + 450, // around 500 units wide
+    size: rng() * 100 + 450,
     hue: rng() * 60 + 30,
     gx,
     gy,
@@ -55,7 +35,11 @@ export function getStarSystem(gx, gy) {
       supplies: {
         fuel: rng() > 0.5,
         oxygen: rng() > 0.5,
-        food: rng() > 0.5
+        food: rng() > 0.5,
+      },
+      resources: {
+        metal: rng() > 0.5,
+        carbon: rng() > 0.5,
       },
       resources: {
         metal: rng() > 0.5,
@@ -67,6 +51,34 @@ export function getStarSystem(gx, gy) {
     });
   }
   return star;
+}
+
+export function drawStarfieldTile(gx, gy, offsetX, offsetY, ctx, tileSize) {
+  const key = `${gx},${gy}`;
+  if (!starfieldTiles.has(key)) {
+    const c = document.createElement('canvas');
+    c.width = c.height = tileSize;
+    const g = c.getContext('2d');
+    const rng = getRandom(gx, gy);
+    g.fillStyle = 'black';
+    g.fillRect(0, 0, tileSize, tileSize);
+    const count = 20;
+    for (let i = 0; i < count; i++) {
+      g.fillStyle = `rgba(255,255,255,${0.5 + rng() * 0.5})`;
+      g.fillRect(rng() * tileSize, rng() * tileSize, 2, 2);
+    }
+    starfieldTiles.set(key, c);
+  }
+  const img = starfieldTiles.get(key);
+  ctx.drawImage(img, gx * tileSize - offsetX, gy * tileSize - offsetY);
+}
+
+export function getStarSystem(gx, gy) {
+  const key = `${gx},${gy}`;
+  if (forcedStars.has(key)) return forcedStars.get(key);
+  const rng = getRandom(gx, gy);
+  if (rng() < 0.97) return null;
+  return createStar(gx, gy, rng);
 }
 
 export function getNearbySystems(state, radius) {
@@ -103,6 +115,20 @@ export function findNearestStar(x, y, searchRadius = STAR_SPACING * 20) {
   }
   return closest ? closest.star : null;
 }
+
+export function ensureStarNear(x, y, radius = STAR_SPACING * 2) {
+  const nearest = findNearestStar(x, y, radius);
+  if (nearest) return nearest;
+  const gx = Math.round(x / STAR_SPACING);
+  const gy = Math.round(y / STAR_SPACING);
+  const key = `${gx},${gy}`;
+  if (forcedStars.has(key)) return forcedStars.get(key);
+  const rng = mulberry32((gx * 97467) ^ (gy * 59359));
+  const star = createStar(gx, gy, rng);
+  forcedStars.set(key, star);
+  return star;
+}
+
 export function ensurePlanetTurrets(gx, gy, planetIndex, size) {
   const key = `${gx},${gy},${planetIndex}`;
   if (!state.turrets[key]) {
@@ -115,4 +141,3 @@ export function ensurePlanetTurrets(gx, gy, planetIndex, size) {
   }
   return state.turrets[key];
 }
-
