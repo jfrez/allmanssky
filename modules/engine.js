@@ -1,8 +1,10 @@
-import { state, ctx, canvas } from './state.js';
+import { state, ctx, canvas, resetState } from './state.js';
 import { generatePlanetTexture, generateShipTexture } from './textures.js';
-import { drawStarfieldTile, getNearbySystems } from './world.js';
+import { drawStarfieldTile, getNearbySystems, findNearestStar, ensurePlanetTurrets, ensureStarNear } from './world.js';
+import { playIntro } from './intro.js';
 
-const ENEMY_SPAWN_FRAMES = 60 * 60 * 5; // spawn roughly every 5 minutes
+const ENEMY_SPAWN_FRAMES = 60 * 30; // spawn roughly every 30 seconds
+const TURRET_COOLDOWN_FRAMES = 60; // turret fires about once per second
 
 export function shoot() {
   if (state.weaponHeat >= state.maxHeat) return;
@@ -11,22 +13,31 @@ export function shoot() {
     state.mouseX - canvas.width / 2
   );
   const bulletSpeed = 8;
-  state.bullets.push({
-    x: state.playerX,
-    y: state.playerY,
-    vx: Math.cos(angle) * bulletSpeed,
-    vy: Math.sin(angle) * bulletSpeed,
-  });
+  const rot = state.angle + Math.PI / 2;
+  for (const c of state.cannons) {
+    const ox =
+      (c.x * Math.cos(rot) - c.y * Math.sin(rot)) * state.shipScale;
+    const oy =
+      (c.x * Math.sin(rot) + c.y * Math.cos(rot)) * state.shipScale;
+    state.bullets.push({
+      x: state.playerX + ox,
+      y: state.playerY + oy,
+      vx: Math.cos(angle) * bulletSpeed,
+      vy: Math.sin(angle) * bulletSpeed,
+    });
+  }
   state.weaponHeat = Math.min(state.maxHeat, state.weaponHeat + 20);
 }
 
 function spawnEnemy() {
   const angle = Math.random() * Math.PI * 2;
   const dist = Math.max(canvas.width, canvas.height) * 0.75;
+  const hp = 5 + Math.floor(Math.random() * 11); // 5-15 shots
   state.enemies.push({
     x: state.playerX + Math.cos(angle) * dist,
     y: state.playerY + Math.sin(angle) * dist,
-    health: 3,
+    health: hp,
+    maxHealth: hp,
     seed: Math.floor(Math.random() * 1e9),
   });
 }
@@ -75,7 +86,10 @@ function maybeStartMission(currentStar, currentPlanet) {
   const choices = [];
   for (const s of systems) {
     for (const p of s.planets) {
-      if (p.vendor && (s.gx !== currentStar.gx || s.gy !== currentStar.gy || p.index !== currentPlanet.index)) {
+      if (
+        p.vendor &&
+        (s.gx !== currentStar.gx || s.gy !== currentStar.gy || p.index !== currentPlanet.index)
+      ) {
         choices.push({ s, p });
       }
     }
@@ -93,41 +107,144 @@ function maybeStartMission(currentStar, currentPlanet) {
   state.messageTimer = 240;
 }
 
+function restartGame() {
+  resetState();
+  playIntro().then(draw);
+}
+
 function saveBuildings() {
   localStorage.setItem('buildings', JSON.stringify(state.buildings));
 }
 
-export function placeBuilding() {
-  const systems = getNearbySystems(state, 300);
+function upgradeShip() {
+  state.upgradeLevel += 1;
+  state.shipScale += 0.2;
+  const t = state.upgradeLevel * 0.2;
+  const x = 8 * t;
+  const y = -12 + 22 * t;
+  state.cannons.push({ x, y }, { x: -x, y });
+  state.message = 'Ship upgraded with new cannons!';
+  state.messageTimer = 180;
+}
+
+export function toggleLanding() {
+  if (state.isLanded) {
+    state.isLanded = false;
+    state.message = 'Taking off';
+    state.messageTimer = 120;
+    return true;
+  }
+  if (state.landing) return false;
+  const systems = getNearbySystems(state, 1000);
+  let closest = null;
   for (const s of systems) {
     for (const p of s.planets) {
       const angle = p.phase + state.tick * p.speed;
       const px = s.x + Math.cos(angle) * p.orbit;
       const py = s.y + Math.sin(angle) * p.orbit;
       const dist = Math.hypot(px - state.playerX, py - state.playerY);
-      if (dist < p.size + 12) {
-        if (state.inventory.ore < 10) {
-          state.message = 'Need 10 ore to build';
-          state.messageTimer = 180;
-          return false;
-        }
-        state.inventory.ore -= 10;
-        state.buildings.push({
-          gx: s.gx,
-          gy: s.gy,
-          planetIndex: p.index,
-          x: state.playerX,
-          y: state.playerY,
-          rot: state.buildRotation,
-        });
-        saveBuildings();
-        state.message = 'Placed building module';
-        state.messageTimer = 180;
-        return true;
+      if (!closest || dist < closest.dist) {
+        closest = { s, p, px, py, dist };
       }
     }
   }
-  state.message = 'Must be landed on a planet';
+  if (closest && closest.dist <= closest.p.size * 1.1) {
+    const { s, p, px, py } = closest;
+    const dx = state.playerX - px;
+    const dy = state.playerY - py;
+    const ang = Math.atan2(dy, dx);
+    state.landing = {
+      targetX: px + Math.cos(ang) * p.size,
+      targetY: py + Math.sin(ang) * p.size,
+      frames: 30,
+      star: s,
+      planet: p,
+    };
+    state.playerVX = 0;
+    state.playerVY = 0;
+    state.message = 'Landing...';
+    state.messageTimer = 60;
+    return true;
+  }
+  state.message = 'No planet to land on';
+  state.messageTimer = 120;
+  return false;
+}
+
+export function harvestResource() {
+  if (!state.isLanded) {
+    state.message = 'Land first with E';
+    state.messageTimer = 120;
+    return false;
+  }
+  const systems = getNearbySystems(state, 300);
+  for (const s of systems) {
+    if (s.gx !== state.landedGX || s.gy !== state.landedGY) continue;
+    for (const p of s.planets) {
+      if (p.index !== state.landedPlanetIndex) continue;
+      if (p.resources) {
+        let harvested = false;
+        if (p.resources.metal) {
+          state.inventory.metal += 1;
+          harvested = true;
+        }
+        if (p.resources.carbon) {
+          state.inventory.carbon += 1;
+          harvested = true;
+        }
+        if (harvested) {
+          state.message = 'Harvested resources';
+          state.messageTimer = 120;
+          return true;
+        }
+      }
+    }
+  }
+  state.message = 'No resources here';
+  state.messageTimer = 120;
+  return false;
+}
+
+export function placeBuilding() {
+  if (!state.isLanded) {
+    state.message = 'Must be landed on a planet';
+    state.messageTimer = 180;
+    return false;
+  }
+  const systems = getNearbySystems(state, 300);
+  for (const s of systems) {
+    if (s.gx === state.landedGX && s.gy === state.landedGY) {
+      for (const p of s.planets) {
+        if (p.index === state.landedPlanetIndex) {
+          if (
+            state.inventory.ore < 10 ||
+            state.inventory.metal < 5 ||
+            state.inventory.carbon < 5
+          ) {
+            state.message = 'Need 10 ore, 5 metal, 5 carbon to build';
+            state.messageTimer = 180;
+            return false;
+          }
+          state.inventory.ore -= 10;
+          state.inventory.metal -= 5;
+          state.inventory.carbon -= 5;
+          state.buildings.push({
+            gx: s.gx,
+            gy: s.gy,
+            planetIndex: p.index,
+            x: state.playerX,
+            y: state.playerY,
+            rot: state.buildRotation,
+          });
+          saveBuildings();
+          state.message = 'Placed building module';
+          state.messageTimer = 180;
+          return true;
+        }
+      }
+    }
+  }
+  state.message = 'No place to build';
   state.messageTimer = 180;
   return false;
 }
@@ -137,6 +254,7 @@ export function update() {
   state.tick += 1;
   if (state.messageTimer > 0) state.messageTimer -= 1;
   state.weaponHeat = Math.max(0, state.weaponHeat - 0.5);
+  ensureStarNear(state.playerX, state.playerY);
   if (state.tick > 0 && state.tick % ENEMY_SPAWN_FRAMES === 0) {
     spawnEnemy();
   }
@@ -147,26 +265,67 @@ export function update() {
   );
   state.angle = orientation;
 
+  if (state.landing) {
+    const l = state.landing;
+    state.playerX += (l.targetX - state.playerX) * 0.2;
+    state.playerY += (l.targetY - state.playerY) * 0.2;
+    if (--l.frames <= 0) {
+      state.playerX = l.targetX;
+      state.playerY = l.targetY;
+      state.isLanded = true;
+      state.landedGX = l.star.gx;
+      state.landedGY = l.star.gy;
+      state.landedPlanetIndex = l.planet.index;
+      if (l.planet.supplies.fuel) state.resources.fuel = state.maxFuel;
+      if (l.planet.supplies.oxygen) state.resources.oxygen = state.maxResource;
+      if (l.planet.supplies.food) state.resources.food = state.maxResource;
+      if (l.planet.vendor && state.messageTimer === 0) {
+        tradeWithVendor(l.planet.vendor);
+        checkMissionCompletion(l.star, l.planet);
+        maybeStartMission(l.star, l.planet);
+      }
+      const key = `${l.star.gx},${l.star.gy},${l.planet.index}`;
+      if (!state.visitedPlanets[key]) {
+        state.visitedPlanets[key] = true;
+        const turrets = ensurePlanetTurrets(
+          l.star.gx,
+          l.star.gy,
+          l.planet.index,
+          l.planet.size
+        );
+        if (turrets.length === 0) {
+          upgradeShip();
+        }
+      }
+      state.landing = null;
+      state.message = 'Landed - press E to take off';
+      state.messageTimer = 120;
+    }
+    return;
+  }
+
   const thrust = 0.2;
-  if (state.keys.up && state.resources.fuel > 0) {
-    state.playerVX += Math.cos(orientation) * thrust;
-    state.playerVY += Math.sin(orientation) * thrust;
-    state.resources.fuel = Math.max(0, state.resources.fuel - 0.5);
-  }
-  if (state.keys.down && state.resources.fuel > 0) {
-    state.playerVX -= Math.cos(orientation) * thrust;
-    state.playerVY -= Math.sin(orientation) * thrust;
-    state.resources.fuel = Math.max(0, state.resources.fuel - 0.5);
-  }
-  if (state.keys.left && state.resources.fuel > 0) {
-    state.playerVX -= Math.sin(orientation) * thrust;
-    state.playerVY += Math.cos(orientation) * thrust;
-    state.resources.fuel = Math.max(0, state.resources.fuel - 0.5);
-  }
-  if (state.keys.right && state.resources.fuel > 0) {
-    state.playerVX += Math.sin(orientation) * thrust;
-    state.playerVY -= Math.cos(orientation) * thrust;
-    state.resources.fuel = Math.max(0, state.resources.fuel - 0.5);
+  if (!state.isLanded) {
+    if (state.keys.up && state.resources.fuel > 0) {
+      state.playerVX += Math.cos(orientation) * thrust;
+      state.playerVY += Math.sin(orientation) * thrust;
+      state.resources.fuel = Math.max(0, state.resources.fuel - 0.5);
+    }
+    if (state.keys.down && state.resources.fuel > 0) {
+      state.playerVX -= Math.cos(orientation) * thrust;
+      state.playerVY -= Math.sin(orientation) * thrust;
+      state.resources.fuel = Math.max(0, state.resources.fuel - 0.5);
+    }
+    if (state.keys.left && state.resources.fuel > 0) {
+      state.playerVX -= Math.sin(orientation) * thrust;
+      state.playerVY += Math.cos(orientation) * thrust;
+      state.resources.fuel = Math.max(0, state.resources.fuel - 0.5);
+    }
+    if (state.keys.right && state.resources.fuel > 0) {
+      state.playerVX += Math.sin(orientation) * thrust;
+      state.playerVY -= Math.cos(orientation) * thrust;
+      state.resources.fuel = Math.max(0, state.resources.fuel - 0.5);
+    }
   }
 
 
@@ -195,23 +354,51 @@ export function update() {
     }
   }
 
-  for (let i = state.bullets.length - 1; i >= 0; i--) {
-    const b = state.bullets[i];
-    b.x += b.vx;
-    b.y += b.vy;
-    let hit = false;
-    for (let j = state.enemies.length - 1; j >= 0 && !hit; j--) {
-      const e = state.enemies[j];
-      const dx = b.x - e.x;
-      const dy = b.y - e.y;
-      if (dx * dx + dy * dy < 225) {
-        e.health -= 1;
-        if (e.health <= 0) state.enemies.splice(j, 1);
-        hit = true;
+    const bulletSystems = getNearbySystems(state, 1000);
+    for (let i = state.bullets.length - 1; i >= 0; i--) {
+      const b = state.bullets[i];
+      b.x += b.vx;
+      b.y += b.vy;
+      let hit = false;
+      for (let j = state.enemies.length - 1; j >= 0 && !hit; j--) {
+        const e = state.enemies[j];
+        const dx = b.x - e.x;
+        const dy = b.y - e.y;
+        if (dx * dx + dy * dy < 225) {
+          e.health -= 1;
+          if (e.health <= 0) {
+            state.enemies.splice(j, 1);
+            state.credits += 200;
+            state.message = 'Enemy destroyed +200c';
+            state.messageTimer = 120;
+          }
+          hit = true;
+        }
       }
+      for (const s of bulletSystems) {
+        if (hit) break;
+        for (const p of s.planets) {
+          if (hit) break;
+          const turrets = ensurePlanetTurrets(s.gx, s.gy, p.index, p.size);
+          const angle = p.phase + state.tick * p.speed;
+          const px = s.x + Math.cos(angle) * p.orbit;
+          const py = s.y + Math.sin(angle) * p.orbit;
+          for (let t = turrets.length - 1; t >= 0 && !hit; t--) {
+            const turret = turrets[t];
+            const tx = px + Math.cos(turret.angle) * (p.size + 10);
+            const ty = py + Math.sin(turret.angle) * (p.size + 10);
+            const dx = b.x - tx;
+            const dy = b.y - ty;
+            if (dx * dx + dy * dy < 225) {
+              turret.health -= 1;
+              if (turret.health <= 0) turrets.splice(t, 1);
+              hit = true;
+            }
+          }
+        }
+      }
+      if (hit) state.bullets.splice(i, 1);
     }
-    if (hit) state.bullets.splice(i, 1);
-  }
 
   for (let i = state.enemyBullets.length - 1; i >= 0; i--) {
     const b = state.enemyBullets[i];
@@ -232,7 +419,7 @@ export function update() {
     const dys = s.y - state.playerY;
     const distStar = Math.hypot(dxs, dys);
     const starInfluence = 200 + s.size;
-    if (distStar < starInfluence && distStar > 0) {
+    if (!state.isLanded && distStar < starInfluence && distStar > 0) {
       const strength = (1 - distStar / starInfluence) * 0.1;
 
       state.playerX += (dxs / distStar) * strength;
@@ -241,14 +428,38 @@ export function update() {
         state.playerHealth = Math.max(0, state.playerHealth - 1);
       }
     }
-    for (const p of s.planets) {
-      const angle = p.phase + state.tick * p.speed;
-      const px = s.x + Math.cos(angle) * p.orbit;
-      const py = s.y + Math.sin(angle) * p.orbit;
-      const dx = px - state.playerX;
-      const dy = py - state.playerY;
-      const dist = Math.hypot(dx, dy);
-      if (dist < p.size + 12) {
+      for (const p of s.planets) {
+        const angle = p.phase + state.tick * p.speed;
+        const px = s.x + Math.cos(angle) * p.orbit;
+        const py = s.y + Math.sin(angle) * p.orbit;
+        const dx = px - state.playerX;
+        const dy = py - state.playerY;
+        const dist = Math.hypot(dx, dy);
+        const turrets = ensurePlanetTurrets(s.gx, s.gy, p.index, p.size);
+        for (const t of turrets) {
+          if (t.cooldown > 0) t.cooldown -= 1;
+          if (dist < p.size * 10 && t.cooldown <= 0) {
+            const tx = px + Math.cos(t.angle) * (p.size + 10);
+            const ty = py + Math.sin(t.angle) * (p.size + 10);
+            const ang = Math.atan2(state.playerY - ty, state.playerX - tx);
+            const speed = 6;
+            state.enemyBullets.push({
+              x: tx,
+              y: ty,
+              vx: Math.cos(ang) * speed,
+              vy: Math.sin(ang) * speed,
+            });
+            t.cooldown = TURRET_COOLDOWN_FRAMES;
+          }
+        }
+        if (
+          state.isLanded &&
+          s.gx === state.landedGX &&
+          s.gy === state.landedGY &&
+          p.index === state.landedPlanetIndex
+      ) {
+        state.playerX = px;
+        state.playerY = py;
         landed = true;
         if (p.supplies.fuel) state.resources.fuel = state.maxFuel;
         if (p.supplies.oxygen) state.resources.oxygen = state.maxResource;
@@ -258,22 +469,47 @@ export function update() {
           checkMissionCompletion(s, p);
           maybeStartMission(s, p);
         }
-      }
-      const influence = 150 + p.size;
-      if (dist < influence && dist > 0) {
-        const strength = (1 - dist / influence) * 0.2;
+      } else if (!state.isLanded) {
+        const influence = 150 + p.size;
+        if (dist < influence && dist > 0) {
+          const strength = (1 - dist / influence) * 0.2;
 
-        state.playerX += (dx / dist) * strength;
-        state.playerY += (dy / dist) * strength;
+          state.playerX += (dx / dist) * strength;
+          state.playerY += (dy / dist) * strength;
+        }
       }
     }
   }
+  if (state.isLanded && !landed) {
+    state.isLanded = false;
+  }
   if (landed) state.playerHealth = 100;
 
-  state.playerX += state.playerVX;
-  state.playerY += state.playerVY;
+  if (!state.isLanded) {
+    state.playerX += state.playerVX;
+    state.playerY += state.playerVY;
+  } else {
+    state.playerVX = 0;
+    state.playerVY = 0;
+  }
   state.playerVX *= 0.99;
   state.playerVY *= 0.99;
+
+  if (!state.isDead && state.playerHealth <= 0) {
+    const quotes = [
+      'La oscuridad del espacio te reclama...',
+      'Tu nave se pierde entre las estrellas muertas...',
+      'En el vacío solo queda silencio...',
+      'Explorador caído en el infinito...',
+      'Una nova envuelve tus restos cósmicos...'
+    ];
+    state.isDead = true;
+    state.message = quotes[Math.floor(Math.random() * quotes.length)];
+    state.messageTimer = 180;
+  }
+  if (state.isDead && state.messageTimer === 0) {
+    state.isRestarting = true;
+  }
 
 }
 
@@ -308,7 +544,7 @@ export function draw() {
       const angle = p.phase + state.tick * p.speed;
       const px = s.x + Math.cos(angle) * p.orbit - offsetX;
       const py = s.y + Math.sin(angle) * p.orbit - offsetY;
-      const img = generatePlanetTexture(p.seed, p.size);
+      const img = generatePlanetTexture(p.seed, p.size, p.resources);
       ctx.drawImage(img, px - p.size, py - p.size);
       if (p.supplies.fuel || p.supplies.oxygen || p.supplies.food) {
         ctx.strokeStyle = 'cyan';
@@ -317,12 +553,74 @@ export function draw() {
         ctx.arc(px, py, p.size + 1, 0, Math.PI * 2);
         ctx.stroke();
       }
+      if (p.resources && (p.resources.metal || p.resources.carbon)) {
+        ctx.strokeStyle = 'yellow';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(px, py, p.size + 4, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      const turrets = ensurePlanetTurrets(s.gx, s.gy, p.index, p.size);
+      for (const t of turrets) {
+        const tx = px + Math.cos(t.angle) * (p.size + 10);
+        const ty = py + Math.sin(t.angle) * (p.size + 10);
+        ctx.fillStyle = 'red';
+        ctx.fillRect(tx - 3, ty - 3, 6, 6);
+        ctx.fillStyle = 'grey';
+        ctx.fillRect(tx - 5, ty - 8, 10, 3);
+        ctx.fillStyle = 'lime';
+        ctx.fillRect(tx - 5, ty - 8, (t.health / t.maxHealth) * 10, 3);
+      }
     }
   }
 
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate(state.angle + Math.PI / 2);
+  ctx.scale(state.shipScale, state.shipScale);
+  if (!state.isLanded && !state.landing) {
+    ctx.fillStyle = 'orange';
+    if (state.keys.up) {
+      const len = 8 + Math.random() * 4;
+      ctx.beginPath();
+      ctx.moveTo(-3, 10);
+      ctx.lineTo(0, 10 + len);
+      ctx.lineTo(3, 10);
+      ctx.closePath();
+      ctx.fill();
+    }
+    if (state.keys.down) {
+      const len = 6 + Math.random() * 3;
+      ctx.beginPath();
+      ctx.moveTo(-2, -10);
+      ctx.lineTo(0, -10 - len);
+      ctx.lineTo(2, -10);
+      ctx.closePath();
+      ctx.fill();
+    }
+    if (state.keys.left) {
+      const len = 6 + Math.random() * 3;
+      ctx.beginPath();
+      ctx.moveTo(-10, -2);
+      ctx.lineTo(-10 - len, 0);
+      ctx.lineTo(-10, 2);
+      ctx.closePath();
+      ctx.fill();
+    }
+    if (state.keys.right) {
+      const len = 6 + Math.random() * 3;
+      ctx.beginPath();
+      ctx.moveTo(10, -2);
+      ctx.lineTo(10 + len, 0);
+      ctx.lineTo(10, 2);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+  ctx.fillStyle = 'grey';
+  for (const c of state.cannons) {
+    ctx.fillRect(c.x - 1, c.y - 4, 2, 4);
+  }
   ctx.fillStyle = 'cyan';
   ctx.beginPath();
   ctx.moveTo(0, -12);
@@ -346,6 +644,11 @@ export function draw() {
   for (const e of state.enemies) {
     const img = generateShipTexture(e.seed);
     ctx.drawImage(img, e.x - offsetX - img.width / 2, e.y - offsetY - img.height / 2);
+    ctx.fillStyle = 'grey';
+    ctx.fillRect(e.x - offsetX - 12, e.y - offsetY - img.height / 2 - 6, 24, 3);
+    ctx.fillStyle = 'lime';
+    const ew = (e.health / e.maxHealth) * 24;
+    ctx.fillRect(e.x - offsetX - 12, e.y - offsetY - img.height / 2 - 6, ew, 3);
   }
 
   ctx.fillStyle = 'white';
@@ -412,7 +715,7 @@ export function draw() {
     canvas.height - 20
   );
   ctx.fillText(
-    `Credits: ${state.credits} Ore: ${state.inventory.ore}`,
+    `Credits: ${state.credits} Ore: ${state.inventory.ore} Metal: ${state.inventory.metal} Carbon: ${state.inventory.carbon}`,
     20,
     canvas.height - 36
   );
@@ -423,6 +726,11 @@ export function draw() {
       canvas.height - 52
     );
   }
+  ctx.fillText(
+    'Keys: WASD move Space shoot E land/take off H harvest B build R rotate',
+    20,
+    canvas.height - 68
+  );
   if (state.messageTimer > 0) {
     ctx.fillStyle = 'yellow';
     const text = state.message;
@@ -474,9 +782,40 @@ export function draw() {
         }
       }
     }
+    const nearest = findNearestStar(state.playerX, state.playerY);
+    if (nearest) {
+      let dx = (nearest.x - state.playerX) / radius;
+      let dy = (nearest.y - state.playerY) / radius;
+      const mag = Math.hypot(dx, dy);
+      if (mag > 1) {
+        dx /= mag;
+        dy /= mag;
+      }
+      const sx = rx + size / 2 + dx * size / 2;
+      const sy = ry + size / 2 + dy * size / 2;
+      const ang = Math.atan2(dy, dx);
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.moveTo(sx + Math.cos(ang) * 6, sy + Math.sin(ang) * 6);
+      ctx.lineTo(
+        sx + Math.cos(ang + Math.PI * 0.75) * 6,
+        sy + Math.sin(ang + Math.PI * 0.75) * 6
+      );
+      ctx.lineTo(
+        sx + Math.cos(ang - Math.PI * 0.75) * 6,
+        sy + Math.sin(ang - Math.PI * 0.75) * 6
+      );
+      ctx.closePath();
+      ctx.fill();
+    }
   } else {
     state.radarTargets = [];
   }
 
-  requestAnimationFrame(draw);
+  if (state.isRestarting) {
+    state.isRestarting = false;
+    restartGame();
+  } else {
+    requestAnimationFrame(draw);
+  }
 }
