@@ -7,8 +7,6 @@ export const STAR_SPACING = 500;
 export const MIN_STAR_DISTANCE = 4000;
 export const MAX_STAR_DISTANCE = 8000;
 
-
-
 const starfieldTiles = new Map();
 const forcedStars = new Map();
 
@@ -81,7 +79,9 @@ export function getStarSystem(gx, gy) {
   if (forcedStars.has(key)) return forcedStars.get(key);
   const rng = getRandom(gx, gy);
   if (rng() < 0.97) return null;
-  return createStar(gx, gy, rng);
+  const star = createStar(gx, gy, rng);
+  forcedStars.set(key, star);
+  return star;
 }
 
 export function getNearbySystems(state, radius) {
@@ -132,8 +132,9 @@ export function ensureStarNear(x, y) {
     const ang = Math.random() * Math.PI * 2;
     const nx = x + Math.cos(ang) * dist;
     const ny = y + Math.sin(ang) * dist;
-    const conflict = findNearestStar(nx, ny, 2000);
-    if (conflict && Math.hypot(conflict.x - nx, conflict.y - ny) < 2000) {
+    const conflict = findNearestStar(nx, ny, MIN_STAR_DISTANCE);
+    if (conflict && Math.hypot(conflict.x - nx, conflict.y - ny) < MIN_STAR_DISTANCE) {
+
       continue;
     }
     const gx = Math.round(nx / STAR_SPACING);
