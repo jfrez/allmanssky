@@ -133,9 +133,11 @@ export function ensurePlanetTurrets(gx, gy, planetIndex, size) {
     const count = Math.min(10, Math.max(1, Math.round(size / 40)));
     state.turrets[key] = [];
     for (let i = 0; i < count; i++) {
+      const hp = 3 + Math.floor(rng() * 8); // 3-10 shots
       state.turrets[key].push({
         angle: rng() * Math.PI * 2,
-        health: 3,
+        health: hp,
+        maxHealth: hp,
         cooldown: 0,
       });
 

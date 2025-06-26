@@ -7,8 +7,10 @@ Thruster flames animate while keys are held down so you can tell which jets are
 firing. Movement has inertia, so you'll drift through space unless you
 counter-thrust.
 Enemy ships now spawn frequently (about one every thirty seconds) and will fire
-at you. Destroying one awards **200 credits**. Press **Space** or click the
-mouse to shoot back. Each planet and enemy
+at you. Each one has a small health bar and survives anywhere from five to
+fifteen hits. Destroying one awards **200 credits**. Press **Space** or click
+the mouse to shoot back. Each planet and enemy
+
 uses a unique procedurally created texture. A radar is always visible in the
 upper-right corner showing nearby planets. Clicking a planet on the radar
 instantly warps your ship to its location.
@@ -24,15 +26,15 @@ Press **R** to rotate the module before building. Bases are saved locally so
 you can return to them later and appear as brown squares on planets and on the
 radar.
 
-Planets are guarded by 1 to 10 defense turrets depending on their size. These
-turrets can be shot and destroyed, and each shows a small health bar so you can
-see how much damage they've taken. They will open fire whenever you come within
-ten times the planet's radius, so approach carefully.
+Planets are guarded by 1 to 10 defense turrets depending on their size. Each
+turret has between three and ten hit points and displays a tiny health bar so
+you can gauge your progress as you destroy them. They will open fire whenever
+you come within ten times the planet's radius, so approach carefully.
 
 If you clear a planet's defenses and then land on it for the very first time,
 your ship upgrades. It grows slightly larger and gains an additional pair of
-cannons, which are placed symmetrically across the hull. Each upgrade adds more
-firepower, letting you shoot multiple bullets at once.
+cannons, which are placed symmetrically along the ship's triangular frame. Each
+upgrade adds more firepower, letting you shoot multiple bullets at once.
 
 
 Planets belong to solar systems orbiting colorful stars. Star systems are generated procedurally and the game always spawns one close to your ship. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced roughly 50,000 units apart so systems cluster less tightly. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their

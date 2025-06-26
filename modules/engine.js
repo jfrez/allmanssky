@@ -33,10 +33,12 @@ export function shoot() {
 function spawnEnemy() {
   const angle = Math.random() * Math.PI * 2;
   const dist = Math.max(canvas.width, canvas.height) * 0.75;
+  const hp = 5 + Math.floor(Math.random() * 11); // 5-15 shots
   state.enemies.push({
     x: state.playerX + Math.cos(angle) * dist,
     y: state.playerY + Math.sin(angle) * dist,
-    health: 3,
+    health: hp,
+    maxHealth: hp,
     seed: Math.floor(Math.random() * 1e9),
   });
 }
@@ -118,8 +120,11 @@ function saveBuildings() {
 function upgradeShip() {
   state.upgradeLevel += 1;
   state.shipScale += 0.2;
-  const offset = state.upgradeLevel * 6;
-  state.cannons.push({ x: offset, y: -12 }, { x: -offset, y: -12 });
+  const t = state.upgradeLevel * 0.2;
+  const x = 8 * t;
+  const y = -12 + 22 * t;
+  state.cannons.push({ x, y }, { x: -x, y });
+
   state.message = 'Ship upgraded with new cannons!';
   state.messageTimer = 180;
 }
@@ -570,7 +575,8 @@ export function draw() {
         ctx.fillStyle = 'grey';
         ctx.fillRect(tx - 5, ty - 8, 10, 3);
         ctx.fillStyle = 'lime';
-        ctx.fillRect(tx - 5, ty - 8, (t.health / 3) * 10, 3);
+        ctx.fillRect(tx - 5, ty - 8, (t.health / t.maxHealth) * 10, 3);
+
       }
     }
   }
@@ -649,6 +655,11 @@ export function draw() {
   for (const e of state.enemies) {
     const img = generateShipTexture(e.seed);
     ctx.drawImage(img, e.x - offsetX - img.width / 2, e.y - offsetY - img.height / 2);
+    ctx.fillStyle = 'grey';
+    ctx.fillRect(e.x - offsetX - 12, e.y - offsetY - img.height / 2 - 6, 24, 3);
+    ctx.fillStyle = 'lime';
+    const ew = (e.health / e.maxHealth) * 24;
+    ctx.fillRect(e.x - offsetX - 12, e.y - offsetY - img.height / 2 - 6, ew, 3);
   }
 
   ctx.fillStyle = 'white';
