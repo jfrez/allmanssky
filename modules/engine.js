@@ -107,6 +107,7 @@ export function toggleLanding() {
   if (state.landing) return false;
   const systems = getNearbySystems(state, 1000);
   let closest = null;
+
   for (const s of systems) {
     for (const p of s.planets) {
       const angle = p.phase + state.tick * p.speed;
@@ -259,6 +260,7 @@ export function update() {
     }
     return;
   }
+
 
   const thrust = 0.2;
   if (!state.isLanded) {
