@@ -42,7 +42,16 @@ export const state = {
   landing: null,
   isDead: false,
   isRestarting: false,
+  landedGX: null,
+  landedGY: null,
+  landedPlanetIndex: null,
+  message: '',
+  messageTimer: 0,
+  mission: null,
+  buildRotation: 0,
+  buildings: JSON.parse(localStorage.getItem('buildings') || '[]'),
 
+};
 
 export function resetState() {
   Object.assign(state, {
@@ -78,13 +87,3 @@ export function resetState() {
     buildRotation: 0,
   });
 }
-  landedGX: null,
-  landedGY: null,
-  landedPlanetIndex: null,
-  message: '',
-  messageTimer: 0,
-  mission: null,
-  buildRotation: 0,
-  buildings: JSON.parse(localStorage.getItem('buildings') || '[]'),
-
-};
