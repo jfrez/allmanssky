@@ -1,6 +1,6 @@
 import { state, ctx, canvas, resetState } from './state.js';
 import { generatePlanetTexture, generateShipTexture } from './textures.js';
-import { drawStarfieldTile, getNearbySystems, findNearestStar, ensurePlanetTurrets, ensureStarNear } from './world.js';
+import { drawStarfieldTile, getNearbySystems, findNearestStar, getStarSystem, ensurePlanetTurrets, ensureStarNear } from './world.js';
 
 
 import { playIntro } from './intro.js';
@@ -10,7 +10,13 @@ const TURRET_COOLDOWN_FRAMES = 60; // turret fires about once per second
 
 export function shoot() {
   if (state.isOverheated || state.weaponHeat >= state.maxHeat) {
-    if (state.weaponHeat >= state.maxHeat) state.isOverheated = true;
+    if (state.weaponHeat >= state.maxHeat) {
+      state.isOverheated = true;
+      if (state.messageTimer <= 0) {
+        state.message = 'Weapons overheated!';
+        state.messageTimer = 60;
+      }
+    }
     return;
   }
   const angle = Math.atan2(
@@ -47,7 +53,7 @@ function spawnEnemy() {
   });
 }
 
-function ensurePlanetTurrets() {
+function refreshPlanetTurrets() {
   const systems = getNearbySystems(state, state.radarRadius * 2);
   for (const s of systems) {
     for (const p of s.planets) {
@@ -178,12 +184,9 @@ export function toggleLanding() {
   }
   if (closest && closest.dist <= closest.p.size * 1.1) {
     const { s, p, px, py } = closest;
-    const dx = state.playerX - px;
-    const dy = state.playerY - py;
-    const ang = Math.atan2(dy, dx);
     state.landing = {
-      targetX: px + Math.cos(ang) * p.size,
-      targetY: py + Math.sin(ang) * p.size,
+      targetX: px,
+      targetY: py,
       frames: 30,
       star: s,
       planet: p,
@@ -291,7 +294,7 @@ export function update() {
   if (state.tick > 0 && state.tick % ENEMY_SPAWN_FRAMES === 0) {
     spawnEnemy();
   }
-  ensurePlanetTurrets();
+  refreshPlanetTurrets();
 
   for (const t of state.planetTurrets) {
     const star = getStarSystem(t.gx, t.gy);
@@ -304,23 +307,16 @@ export function update() {
     t.x = px + Math.cos(ta) * (p.size + 40);
     t.y = py + Math.sin(ta) * (p.size + 40);
     if (t.cooldown > 0) t.cooldown -= 1;
-    let target = null;
-    for (const e of state.enemies) {
-      const dx = e.x - t.x;
-      const dy = e.y - t.y;
-      const dist = Math.hypot(dx, dy);
-      if (dist < 600) {
-        target = { dx, dy, dist };
-        break;
-      }
-    }
-    if (target && t.cooldown <= 0) {
+    const dx = state.playerX - t.x;
+    const dy = state.playerY - t.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < p.size * 10 && t.cooldown <= 0) {
       const bulletSpeed = 8;
       state.bullets.push({
         x: t.x,
         y: t.y,
-        vx: (target.dx / target.dist) * bulletSpeed,
-        vy: (target.dy / target.dist) * bulletSpeed,
+        vx: (dx / dist) * bulletSpeed,
+        vy: (dy / dist) * bulletSpeed,
       });
       t.cooldown = 20;
     }
@@ -834,7 +830,6 @@ export function draw() {
 
   ctx.fillStyle = 'grey';
   ctx.fillStyle = state.isOverheated ? 'red' : 'orange';
-  if (state.isOverheated) {
   ctx.fillRect(22, 22, state.playerHealth, 10);
   ctx.strokeStyle = 'white';
   ctx.strokeRect(20, 20, 104, 14);
@@ -966,12 +961,7 @@ export function draw() {
     if (nearest) {
       let dx = (nearest.x - state.playerX) / radius;
       let dy = (nearest.y - state.playerY) / radius;
-  if (state.isRestarting) {
-    state.isRestarting = false;
-    restartGame();
-  } else {
-    requestAnimationFrame(draw);
-  }
+      const mag = Math.hypot(dx, dy);
       if (mag > 1) {
         dx /= mag;
         dy /= mag;
@@ -1003,5 +993,4 @@ export function draw() {
   } else {
     requestAnimationFrame(draw);
   }
-}
 }
