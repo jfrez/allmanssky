@@ -6,6 +6,7 @@ import { playIntro } from './intro.js';
 const ENEMY_SPAWN_FRAMES = 60 * 30; // spawn roughly every 30 seconds
 const TURRET_COOLDOWN_FRAMES = 60; // turret fires about once per second
 
+
 export function shoot() {
   if (state.weaponHeat >= state.maxHeat) return;
   const angle = Math.atan2(
@@ -123,6 +124,7 @@ function upgradeShip() {
   const x = 8 * t;
   const y = -12 + 22 * t;
   state.cannons.push({ x, y }, { x: -x, y });
+
   state.message = 'Ship upgraded with new cannons!';
   state.messageTimer = 180;
 }
@@ -297,6 +299,7 @@ export function update() {
           upgradeShip();
         }
       }
+
       state.landing = null;
       state.message = 'Landed - press E to take off';
       state.messageTimer = 120;
@@ -397,6 +400,7 @@ export function update() {
           }
         }
       }
+
       if (hit) state.bullets.splice(i, 1);
     }
 
@@ -439,6 +443,7 @@ export function update() {
         for (const t of turrets) {
           if (t.cooldown > 0) t.cooldown -= 1;
           if (dist < p.size * 10 && t.cooldown <= 0) {
+
             const tx = px + Math.cos(t.angle) * (p.size + 10);
             const ty = py + Math.sin(t.angle) * (p.size + 10);
             const ang = Math.atan2(state.playerY - ty, state.playerX - tx);
@@ -457,6 +462,7 @@ export function update() {
           s.gx === state.landedGX &&
           s.gy === state.landedGY &&
           p.index === state.landedPlanetIndex
+
       ) {
         state.playerX = px;
         state.playerY = py;
@@ -570,6 +576,7 @@ export function draw() {
         ctx.fillRect(tx - 5, ty - 8, 10, 3);
         ctx.fillStyle = 'lime';
         ctx.fillRect(tx - 5, ty - 8, (t.health / t.maxHealth) * 10, 3);
+
       }
     }
   }
@@ -578,6 +585,7 @@ export function draw() {
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate(state.angle + Math.PI / 2);
   ctx.scale(state.shipScale, state.shipScale);
+
   if (!state.isLanded && !state.landing) {
     ctx.fillStyle = 'orange';
     if (state.keys.up) {
@@ -604,6 +612,7 @@ export function draw() {
       ctx.moveTo(-10, -2);
       ctx.lineTo(-10 - len, 0);
       ctx.lineTo(-10, 2);
+
       ctx.closePath();
       ctx.fill();
     }
@@ -613,6 +622,7 @@ export function draw() {
       ctx.moveTo(10, -2);
       ctx.lineTo(10 + len, 0);
       ctx.lineTo(10, 2);
+
       ctx.closePath();
       ctx.fill();
     }
@@ -621,6 +631,7 @@ export function draw() {
   for (const c of state.cannons) {
     ctx.fillRect(c.x - 1, c.y - 4, 2, 4);
   }
+
   ctx.fillStyle = 'cyan';
   ctx.beginPath();
   ctx.moveTo(0, -12);

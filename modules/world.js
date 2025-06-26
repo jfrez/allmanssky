@@ -6,6 +6,7 @@ export const STAR_SPACING = 50000;
 const starfieldTiles = new Map();
 const forcedStars = new Map();
 
+
 function createStar(gx, gy, rng) {
   const star = {
     x: gx * STAR_SPACING + rng() * STAR_SPACING,
@@ -39,6 +40,7 @@ function createStar(gx, gy, rng) {
       resources: {
         metal: rng() > 0.5,
         carbon: rng() > 0.5,
+
       },
       vendor: hasVendor
         ? { buyPrice: basePrice, sellPrice: Math.floor(basePrice * 0.8) }
@@ -138,6 +140,7 @@ export function ensurePlanetTurrets(gx, gy, planetIndex, size) {
         maxHealth: hp,
         cooldown: 0,
       });
+
     }
   }
   return state.turrets[key];
