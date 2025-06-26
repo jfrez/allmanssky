@@ -83,7 +83,6 @@ export function resetState() {
     upgradeLevel: 0,
     cannons: [{ x: 0, y: -12 }],
     visitedPlanets: {},
-
     isLanded: false,
     landing: null,
     landedGX: null,

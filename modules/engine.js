@@ -1,10 +1,11 @@
 import { state, ctx, canvas, resetState } from './state.js';
 import { generatePlanetTexture, generateShipTexture } from './textures.js';
 import { drawStarfieldTile, getNearbySystems, findNearestStar, ensurePlanetTurrets, ensureStarNear } from './world.js';
-
 import { playIntro } from './intro.js';
 
 const ENEMY_SPAWN_FRAMES = 60 * 30; // spawn roughly every 30 seconds
+const TURRET_COOLDOWN_FRAMES = 60; // turret fires about once per second
+
 
 export function shoot() {
   if (state.weaponHeat >= state.maxHeat) return;
@@ -122,7 +123,6 @@ function upgradeShip() {
   state.message = 'Ship upgraded with new cannons!';
   state.messageTimer = 180;
 }
-
 
 export function toggleLanding() {
   if (state.isLanded) {
@@ -395,6 +395,7 @@ export function update() {
           }
         }
       }
+
       if (hit) state.bullets.splice(i, 1);
     }
 
@@ -426,18 +427,36 @@ export function update() {
         state.playerHealth = Math.max(0, state.playerHealth - 1);
       }
     }
-    for (const p of s.planets) {
-      const angle = p.phase + state.tick * p.speed;
-      const px = s.x + Math.cos(angle) * p.orbit;
-      const py = s.y + Math.sin(angle) * p.orbit;
-      const dx = px - state.playerX;
-      const dy = py - state.playerY;
-      const dist = Math.hypot(dx, dy);
-      if (
-        state.isLanded &&
-        s.gx === state.landedGX &&
-        s.gy === state.landedGY &&
-        p.index === state.landedPlanetIndex
+      for (const p of s.planets) {
+        const angle = p.phase + state.tick * p.speed;
+        const px = s.x + Math.cos(angle) * p.orbit;
+        const py = s.y + Math.sin(angle) * p.orbit;
+        const dx = px - state.playerX;
+        const dy = py - state.playerY;
+        const dist = Math.hypot(dx, dy);
+        const turrets = ensurePlanetTurrets(s.gx, s.gy, p.index, p.size);
+        for (const t of turrets) {
+          if (t.cooldown > 0) t.cooldown -= 1;
+          if (dist < p.size * 2 && t.cooldown <= 0) {
+            const tx = px + Math.cos(t.angle) * (p.size + 10);
+            const ty = py + Math.sin(t.angle) * (p.size + 10);
+            const ang = Math.atan2(state.playerY - ty, state.playerX - tx);
+            const speed = 6;
+            state.enemyBullets.push({
+              x: tx,
+              y: ty,
+              vx: Math.cos(ang) * speed,
+              vy: Math.sin(ang) * speed,
+            });
+            t.cooldown = TURRET_COOLDOWN_FRAMES;
+          }
+        }
+        if (
+          state.isLanded &&
+          s.gx === state.landedGX &&
+          s.gy === state.landedGY &&
+          p.index === state.landedPlanetIndex
+
       ) {
         state.playerX = px;
         state.playerY = py;

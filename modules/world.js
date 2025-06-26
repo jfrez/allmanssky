@@ -1,11 +1,11 @@
 import { getRandom, randomNormal, mulberry32 } from './util.js';
 import { state } from './state.js';
 
-
 export const STAR_SPACING = 50000;
 
 const starfieldTiles = new Map();
 const forcedStars = new Map();
+
 
 function createStar(gx, gy, rng) {
   const star = {
@@ -40,10 +40,7 @@ function createStar(gx, gy, rng) {
       resources: {
         metal: rng() > 0.5,
         carbon: rng() > 0.5,
-      },
-      resources: {
-        metal: rng() > 0.5,
-        carbon: rng() > 0.5
+
       },
       vendor: hasVendor
         ? { buyPrice: basePrice, sellPrice: Math.floor(basePrice * 0.8) }
@@ -136,7 +133,12 @@ export function ensurePlanetTurrets(gx, gy, planetIndex, size) {
     const count = Math.min(10, Math.max(1, Math.round(size / 40)));
     state.turrets[key] = [];
     for (let i = 0; i < count; i++) {
-      state.turrets[key].push({ angle: rng() * Math.PI * 2, health: 3 });
+      state.turrets[key].push({
+        angle: rng() * Math.PI * 2,
+        health: 3,
+        cooldown: 0,
+      });
+
     }
   }
   return state.turrets[key];
