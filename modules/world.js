@@ -134,6 +134,7 @@ export function ensureStarNear(x, y) {
     const ny = y + Math.sin(ang) * dist;
     const conflict = findNearestStar(nx, ny, MIN_STAR_DISTANCE);
     if (conflict && Math.hypot(conflict.x - nx, conflict.y - ny) < MIN_STAR_DISTANCE) {
+
       continue;
     }
     const gx = Math.round(nx / STAR_SPACING);
@@ -148,6 +149,7 @@ export function ensureStarNear(x, y) {
     return star;
   }
   return nearest;
+
 }
 
 export function ensurePlanetTurrets(gx, gy, planetIndex, size) {
