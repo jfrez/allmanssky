@@ -1,6 +1,7 @@
 import { state, ctx, canvas, resetState } from './state.js';
 import { generatePlanetTexture, generateShipTexture } from './textures.js';
 import { drawStarfieldTile, getNearbySystems, findNearestStar, ensurePlanetTurrets, ensureStarNear } from './world.js';
+
 import { playIntro } from './intro.js';
 
 const ENEMY_SPAWN_FRAMES = 60 * 30; // spawn roughly every 30 seconds
@@ -484,6 +485,22 @@ export function update() {
           checkMissionCompletion(s, p);
           maybeStartMission(s, p);
         }
+  if (!state.isDead && state.playerHealth <= 0) {
+    const quotes = [
+      'La oscuridad del espacio te reclama...',
+      'Tu nave se pierde entre las estrellas muertas...',
+      'En el vacío solo queda silencio...',
+      'Explorador caído en el infinito...',
+      'Una nova envuelve tus restos cósmicos...'
+    ];
+    state.isDead = true;
+    state.message = quotes[Math.floor(Math.random() * quotes.length)];
+    state.messageTimer = 180;
+  }
+  if (state.isDead && state.messageTimer === 0) {
+    state.isRestarting = true;
+  }
+
       } else if (!state.isLanded) {
         const influence = 150 + p.size;
         if (dist < influence && dist > 0) {
@@ -803,7 +820,12 @@ export function draw() {
     if (nearest) {
       let dx = (nearest.x - state.playerX) / radius;
       let dy = (nearest.y - state.playerY) / radius;
-      const mag = Math.hypot(dx, dy);
+  if (state.isRestarting) {
+    state.isRestarting = false;
+    restartGame();
+  } else {
+    requestAnimationFrame(draw);
+  }
       if (mag > 1) {
         dx /= mag;
         dy /= mag;

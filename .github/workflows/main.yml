@@ -1,0 +1,27 @@
+name: Auto-merge with conflict resolution
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout target branch (main)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch and merge PR branch, favoring PR branch over main
+        run: |
+          git fetch origin ${{ github.head_ref }}
+          git merge -X theirs origin/${{ github.head_ref }} || true
+          git push origin HEAD:main
