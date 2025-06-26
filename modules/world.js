@@ -7,6 +7,7 @@ export const STAR_SPACING = 500;
 export const MIN_STAR_DISTANCE = 4000;
 export const MAX_STAR_DISTANCE = 8000;
 
+
 const starfieldTiles = new Map();
 const forcedStars = new Map();
 
