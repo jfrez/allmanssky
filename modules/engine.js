@@ -285,7 +285,6 @@ export function update() {
   if (state.tick > 0 && state.tick % ENEMY_SPAWN_FRAMES === 0) {
     spawnEnemy();
   }
-
   for (const base of state.buildings) {
     if (base.type === 'turret') {
       if (base.cooldown > 0) base.cooldown -= 1;

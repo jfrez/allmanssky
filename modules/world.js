@@ -121,7 +121,7 @@ export function findNearestStar(x, y, searchRadius = STAR_SPACING * 20) {
 
 export function ensureStarNear(x, y) {
   const nearest = findNearestStar(x, y, MAX_STAR_DISTANCE);
-  if (nearest && Math.hypot(nearest.x - x, nearest.y - y) >= MIN_STAR_DISTANCE) {
+  if (nearest) {
     return nearest;
   }
 
