@@ -1,6 +1,11 @@
 import { state, ctx, canvas, resetState } from './state.js';
 import { generatePlanetTexture, generateShipTexture } from './textures.js';
-import { drawStarfieldTile, getNearbySystems, findNearestStar } from './world.js';
+import {
+  drawStarfieldTile,
+  getNearbySystems,
+  findNearestStar,
+  getStarSystem,
+} from './world.js';
 import { playIntro } from './intro.js';
 
 const ENEMY_SPAWN_FRAMES = 60 * 30; // spawn roughly every 30 seconds
