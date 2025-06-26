@@ -11,3 +11,12 @@ export function getRandom(gx, gy) {
   const seed = (gx * 374761393 + gy * 668265263) & 0xffffffff;
   return mulberry32(seed);
 }
+
+export function randomNormal(rng, mean = 0, std = 1) {
+  let u = 0,
+    v = 0;
+  while (u === 0) u = rng();
+  while (v === 0) v = rng();
+  const mag = Math.sqrt(-2 * Math.log(u));
+  return mean + std * mag * Math.cos(2 * Math.PI * v);
+}
