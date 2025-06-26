@@ -50,6 +50,7 @@ export const state = {
   mission: null,
   buildRotation: 0,
   planetTurrets: [],
+
   buildings: JSON.parse(localStorage.getItem('buildings') || '[]'),
 
 };

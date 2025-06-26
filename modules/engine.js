@@ -322,6 +322,32 @@ export function update() {
     }
   }
 
+  for (const base of state.buildings) {
+    if (base.type === 'turret') {
+      if (base.cooldown > 0) base.cooldown -= 1;
+      let target = null;
+      for (const e of state.enemies) {
+        const dx = e.x - base.x;
+        const dy = e.y - base.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 600) {
+          target = { dx, dy, dist };
+          break;
+        }
+      }
+      if (target && base.cooldown <= 0) {
+        const bulletSpeed = 8;
+        state.bullets.push({
+          x: base.x,
+          y: base.y,
+          vx: (target.dx / target.dist) * bulletSpeed,
+          vy: (target.dy / target.dist) * bulletSpeed,
+        });
+        base.cooldown = 20;
+      }
+    }
+  }
+
   const orientation = Math.atan2(
     state.mouseY - canvas.height / 2,
     state.mouseX - canvas.width / 2
@@ -657,6 +683,7 @@ export function draw() {
     ctx.lineTo(-10, 10);
     ctx.closePath();
     ctx.fill();
+
     ctx.restore();
   }
 
@@ -803,6 +830,7 @@ export function draw() {
             const sx = rx + size / 2 + dx * size / 2;
             const sy = ry + size / 2 + dy * size / 2;
             ctx.fillStyle = 'red';
+
             ctx.fillRect(sx - 2, sy - 2, 4, 4);
           }
         }
