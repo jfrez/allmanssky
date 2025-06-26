@@ -6,7 +6,8 @@ This project is a small browser game written in plain JavaScript. It renders an 
 ## Gameplay
 
 - **Movement:** Use the arrow keys or **WASD** to control your thrusters. Movement has inertia so you'll drift unless you counter-thrust.
-- **Combat:** Press **Space** or click to fire your cannons. Weapons build heat and temporarily lock when the meter reaches 100%, so let them cool before shooting again.
+- **Combat:** Press **Space** or click to fire your cannons. Weapons build heat and lock for about three seconds if they overheat, so watch the meter.
+
 - **Landing:** Press **E** near a planet to land. A short animation moves the ship to the planet's center once you are within 10% of its radius. Landed vendor worlds automatically trade Ore for credits and may offer randomized cargo delivery missions.
 - **Harvesting & Building:** While landed press **H** to gather Metal and Carbon on resource worlds. Press **B** to place a base module (requires 10 Ore, 5 Metal and 5 Carbon) and **R** to rotate it. Bases are stored locally and appear as brown squares on planets and on the radar.
 - **Radar:** A minimap in the upper right shows nearby planets and clicking one instantly warps your ship to its location.

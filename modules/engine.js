@@ -10,8 +10,10 @@ const TURRET_COOLDOWN_FRAMES = 60; // turret fires about once per second
 
 export function shoot() {
   if (state.isOverheated || state.weaponHeat >= state.maxHeat) {
-    if (state.weaponHeat >= state.maxHeat) {
+    if (state.weaponHeat >= state.maxHeat && !state.isOverheated) {
       state.isOverheated = true;
+      state.overheatTimer = 180; // 3 seconds
+
       if (state.messageTimer <= 0) {
         state.message = 'Weapons overheated!';
         state.messageTimer = 60;
@@ -286,9 +288,15 @@ export function placeBuilding(type = 'base') {
 export function update() {
   state.tick += 1;
   if (state.messageTimer > 0) state.messageTimer -= 1;
-  state.weaponHeat = Math.max(0, state.weaponHeat - 0.5);
-  if (state.isOverheated && state.weaponHeat <= 0) {
-    state.isOverheated = false;
+  if (state.isOverheated) {
+    if (state.overheatTimer > 0) {
+      state.overheatTimer -= 1;
+    } else {
+      state.isOverheated = false;
+      state.weaponHeat = 0;
+    }
+  } else {
+    state.weaponHeat = Math.max(0, state.weaponHeat - 0.5);
   }
   ensureStarNear(state.playerX, state.playerY);
   if (state.tick > 0 && state.tick % ENEMY_SPAWN_FRAMES === 0) {
@@ -311,7 +319,6 @@ export function update() {
     const dy = state.playerY - t.y;
     const dist = Math.hypot(dx, dy);
     if (dist < p.size * 10 && t.cooldown <= 0) {
-
       const bulletSpeed = 8;
       state.bullets.push({
         x: t.x,
