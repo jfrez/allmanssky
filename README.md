@@ -8,15 +8,11 @@ firing. Movement has inertia, so you'll drift through space unless you
 counter-thrust.
 Enemy ships now spawn frequently (about one every thirty seconds) and will fire
 at you. Destroying one awards **200 credits**. Press **Space** or click the
-mouse to shoot back. Each planet and enemy
-
-uses a unique procedurally created texture. A radar is always visible in the
+mouse to shoot back. Each planet and enemy uses a unique procedurally created texture. A radar is always visible in the
 upper-right corner showing nearby planets. Clicking a planet on the radar
 instantly warps your ship to its location.
 
-Some planets host alien traders. Press **E** near a planet to land. A short animation moves the ship down to the surface when you are within ten percent of its radius. Landing on a vendor world automatically
-
-exchanges Ore for credits at prices that vary per planet. Traders may also
+Some planets host alien traders. Press **E** near a planet to land. A short animation moves the ship down to the surface when you are within ten percent of its radius. Landing on a vendor world automatically exchanges Ore for credits at prices that vary per planet. Traders may also
 offer randomized cargo delivery missions that pay credits on completion.
 
 While landed, press **H** on planets with resources to gather Metal and Carbon.
@@ -25,8 +21,11 @@ Press **R** to rotate the module before building. Bases are saved locally so
 you can return to them later and appear as brown squares on planets and on the
 radar.
 
+Planets are guarded by 1 to 10 defense turrets depending on their size. These
+turrets can be shot and destroyed, and each shows a small health bar so you can
+see how much damage they've taken.
 
-Planets belong to solar systems orbiting colorful stars. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced roughly 10,000 units apart so systems cluster close together. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their
+Planets belong to solar systems orbiting colorful stars. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced roughly 50,000 units apart so systems cluster less tightly. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their
 
 gravity pulls on the player. Press **E** to land on planets to refuel and heal, but
 touching a star will slowly damage your ship. Some worlds also replenish fuel,
@@ -44,6 +43,8 @@ near the closest solar system. The minimap now always displays an arrow pointing
 toward the nearest star. Weapons heat up as you fire and will temporarily
 lock if they reach 100%, so watch the heat meter and let them cool off before
 blasting away again.
+If your ship is destroyed, a random sci-fi message appears for a few seconds and
+then the introduction plays again so you respawn near the nearest star.
 Simply open `index.html` in your browser to play the game locally. The canvas
 fills the window for a full-screen experience. Modern
 browsers load the ES modules correctly when the page is opened from disk. If

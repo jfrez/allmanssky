@@ -1,7 +1,7 @@
-import { getRandom, randomNormal } from './util.js';
+import { getRandom, randomNormal, mulberry32 } from './util.js';
+import { state } from './state.js';
 
-export const STAR_SPACING = 10000;
-
+export const STAR_SPACING = 50000;
 
 const starfieldTiles = new Map();
 
@@ -40,7 +40,6 @@ export function getStarSystem(gx, gy) {
   const count = 1 + Math.floor(rng() * 9);
   for (let i = 0; i < count; i++) {
     const orbit = star.size + 300 + i * 300 + rng() * 100;
-
     const size = Math.max(20, randomNormal(rng, 100, 100));
     const speed = rng() * 0.0005 + 0.0002;
     const phase = rng() * Math.PI * 2;
@@ -104,3 +103,16 @@ export function findNearestStar(x, y, searchRadius = STAR_SPACING * 20) {
   }
   return closest ? closest.star : null;
 }
+export function ensurePlanetTurrets(gx, gy, planetIndex, size) {
+  const key = `${gx},${gy},${planetIndex}`;
+  if (!state.turrets[key]) {
+    const rng = mulberry32((gx * 73856093) ^ (gy * 19349663) ^ (planetIndex * 83492791));
+    const count = Math.min(10, Math.max(1, Math.round(size / 40)));
+    state.turrets[key] = [];
+    for (let i = 0; i < count; i++) {
+      state.turrets[key].push({ angle: rng() * Math.PI * 2, health: 3 });
+    }
+  }
+  return state.turrets[key];
+}
+

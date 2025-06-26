@@ -1,6 +1,7 @@
-import { state, ctx, canvas } from './state.js';
+import { state, ctx, canvas, resetState } from './state.js';
 import { generatePlanetTexture, generateShipTexture } from './textures.js';
-import { drawStarfieldTile, getNearbySystems, findNearestStar } from './world.js';
+import { drawStarfieldTile, getNearbySystems, findNearestStar, ensurePlanetTurrets } from './world.js';
+import { playIntro } from './intro.js';
 
 const ENEMY_SPAWN_FRAMES = 60 * 30; // spawn roughly every 30 seconds
 
@@ -75,7 +76,10 @@ function maybeStartMission(currentStar, currentPlanet) {
   const choices = [];
   for (const s of systems) {
     for (const p of s.planets) {
-      if (p.vendor && (s.gx !== currentStar.gx || s.gy !== currentStar.gy || p.index !== currentPlanet.index)) {
+      if (
+        p.vendor &&
+        (s.gx !== currentStar.gx || s.gy !== currentStar.gy || p.index !== currentPlanet.index)
+      ) {
         choices.push({ s, p });
       }
     }
@@ -93,6 +97,11 @@ function maybeStartMission(currentStar, currentPlanet) {
   state.messageTimer = 240;
 }
 
+function restartGame() {
+  resetState();
+  playIntro().then(draw);
+}
+
 function saveBuildings() {
   localStorage.setItem('buildings', JSON.stringify(state.buildings));
 }
@@ -107,7 +116,6 @@ export function toggleLanding() {
   if (state.landing) return false;
   const systems = getNearbySystems(state, 1000);
   let closest = null;
-
   for (const s of systems) {
     for (const p of s.planets) {
       const angle = p.phase + state.tick * p.speed;
@@ -311,28 +319,51 @@ export function update() {
     }
   }
 
-  for (let i = state.bullets.length - 1; i >= 0; i--) {
-    const b = state.bullets[i];
-    b.x += b.vx;
-    b.y += b.vy;
-    let hit = false;
-    for (let j = state.enemies.length - 1; j >= 0 && !hit; j--) {
-      const e = state.enemies[j];
-      const dx = b.x - e.x;
-      const dy = b.y - e.y;
-      if (dx * dx + dy * dy < 225) {
-        e.health -= 1;
-        if (e.health <= 0) {
-          state.enemies.splice(j, 1);
-          state.credits += 200;
-          state.message = 'Enemy destroyed +200c';
-          state.messageTimer = 120;
+    const bulletSystems = getNearbySystems(state, 1000);
+    for (let i = state.bullets.length - 1; i >= 0; i--) {
+      const b = state.bullets[i];
+      b.x += b.vx;
+      b.y += b.vy;
+      let hit = false;
+      for (let j = state.enemies.length - 1; j >= 0 && !hit; j--) {
+        const e = state.enemies[j];
+        const dx = b.x - e.x;
+        const dy = b.y - e.y;
+        if (dx * dx + dy * dy < 225) {
+          e.health -= 1;
+          if (e.health <= 0) {
+            state.enemies.splice(j, 1);
+            state.credits += 200;
+            state.message = 'Enemy destroyed +200c';
+            state.messageTimer = 120;
+          }
+          hit = true;
         }
-        hit = true;
       }
+      for (const s of bulletSystems) {
+        if (hit) break;
+        for (const p of s.planets) {
+          if (hit) break;
+          const turrets = ensurePlanetTurrets(s.gx, s.gy, p.index, p.size);
+          const angle = p.phase + state.tick * p.speed;
+          const px = s.x + Math.cos(angle) * p.orbit;
+          const py = s.y + Math.sin(angle) * p.orbit;
+          for (let t = turrets.length - 1; t >= 0 && !hit; t--) {
+            const turret = turrets[t];
+            const tx = px + Math.cos(turret.angle) * (p.size + 10);
+            const ty = py + Math.sin(turret.angle) * (p.size + 10);
+            const dx = b.x - tx;
+            const dy = b.y - ty;
+            if (dx * dx + dy * dy < 225) {
+              turret.health -= 1;
+              if (turret.health <= 0) turrets.splice(t, 1);
+              hit = true;
+            }
+          }
+        }
+      }
+      if (hit) state.bullets.splice(i, 1);
     }
-    if (hit) state.bullets.splice(i, 1);
-  }
 
   for (let i = state.enemyBullets.length - 1; i >= 0; i--) {
     const b = state.enemyBullets[i];
@@ -412,6 +443,22 @@ export function update() {
   state.playerVX *= 0.99;
   state.playerVY *= 0.99;
 
+  if (!state.isDead && state.playerHealth <= 0) {
+    const quotes = [
+      'La oscuridad del espacio te reclama...',
+      'Tu nave se pierde entre las estrellas muertas...',
+      'En el vacío solo queda silencio...',
+      'Explorador caído en el infinito...',
+      'Una nova envuelve tus restos cósmicos...'
+    ];
+    state.isDead = true;
+    state.message = quotes[Math.floor(Math.random() * quotes.length)];
+    state.messageTimer = 180;
+  }
+  if (state.isDead && state.messageTimer === 0) {
+    state.isRestarting = true;
+  }
+
 }
 
 export function draw() {
@@ -460,6 +507,17 @@ export function draw() {
         ctx.beginPath();
         ctx.arc(px, py, p.size + 4, 0, Math.PI * 2);
         ctx.stroke();
+      }
+      const turrets = ensurePlanetTurrets(s.gx, s.gy, p.index, p.size);
+      for (const t of turrets) {
+        const tx = px + Math.cos(t.angle) * (p.size + 10);
+        const ty = py + Math.sin(t.angle) * (p.size + 10);
+        ctx.fillStyle = 'red';
+        ctx.fillRect(tx - 3, ty - 3, 6, 6);
+        ctx.fillStyle = 'grey';
+        ctx.fillRect(tx - 5, ty - 8, 10, 3);
+        ctx.fillStyle = 'lime';
+        ctx.fillRect(tx - 5, ty - 8, (t.health / 3) * 10, 3);
       }
     }
   }
@@ -692,5 +750,10 @@ export function draw() {
     state.radarTargets = [];
   }
 
-  requestAnimationFrame(draw);
+  if (state.isRestarting) {
+    state.isRestarting = false;
+    restartGame();
+  } else {
+    requestAnimationFrame(draw);
+  }
 }
