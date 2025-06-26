@@ -28,6 +28,8 @@ export const state = {
   weaponHeat: 0,
   isOverheated: false,
   maxHeat: 100,
+  overheatTimer: 0,
+  landingCooldown: 0,
   tick: 0,
   mouseX: canvas.width / 2,
   mouseY: canvas.height / 2,
@@ -75,6 +77,8 @@ export function resetState() {
     enemyBullets: [],
     weaponHeat: 0,
     isOverheated: false,
+    overheatTimer: 0,
+    landingCooldown: 0,
     tick: 0,
     mouseX: canvas.width / 2,
     mouseY: canvas.height / 2,
@@ -99,6 +103,5 @@ export function resetState() {
     mission: null,
     buildRotation: 0,
     turrets: {},
-
   });
 }
