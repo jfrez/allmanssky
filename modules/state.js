@@ -102,7 +102,5 @@ export function resetState() {
     mission: null,
     buildRotation: 0,
     turrets: {},
-    planetTurrets: [],
-
   });
 }
