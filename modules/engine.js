@@ -1,6 +1,6 @@
 import { state, ctx, canvas, resetState } from './state.js';
 import { generatePlanetTexture, generateShipTexture } from './textures.js';
-import { drawStarfieldTile, getNearbySystems, findNearestStar, ensurePlanetTurrets, ensureStarNear } from './world.js';
+import { drawStarfieldTile, getNearbySystems, findNearestStar, getStarSystem, ensurePlanetTurrets, ensureStarNear } from './world.js';
 
 
 import { playIntro } from './intro.js';
