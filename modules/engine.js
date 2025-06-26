@@ -7,15 +7,11 @@ import { playIntro } from './intro.js';
 const ENEMY_SPAWN_FRAMES = 60 * 30; // spawn roughly every 30 seconds
 const TURRET_COOLDOWN_FRAMES = 60; // turret fires about once per second
 
+export function shoot() {
   if (state.isOverheated || state.weaponHeat >= state.maxHeat) {
     if (state.weaponHeat >= state.maxHeat) state.isOverheated = true;
     return;
   }
-  if (state.weaponHeat >= state.maxHeat) {
-    state.isOverheated = true;
-  }
-export function shoot() {
-  if (state.weaponHeat >= state.maxHeat) return;
   const angle = Math.atan2(
     state.mouseY - canvas.height / 2,
     state.mouseX - canvas.width / 2
@@ -236,9 +232,6 @@ export function placeBuilding() {
           }
           state.inventory.ore -= 10;
           state.inventory.metal -= 5;
-  if (state.isOverheated && state.weaponHeat <= 0) {
-    state.isOverheated = false;
-  }
           state.inventory.carbon -= 5;
           state.buildings.push({
             gx: s.gx,
@@ -266,6 +259,9 @@ export function update() {
   state.tick += 1;
   if (state.messageTimer > 0) state.messageTimer -= 1;
   state.weaponHeat = Math.max(0, state.weaponHeat - 0.5);
+  if (state.isOverheated && state.weaponHeat <= 0) {
+    state.isOverheated = false;
+  }
   ensureStarNear(state.playerX, state.playerY);
   if (state.tick > 0 && state.tick % ENEMY_SPAWN_FRAMES === 0) {
     spawnEnemy();
