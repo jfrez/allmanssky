@@ -32,6 +32,28 @@ function spawnEnemy() {
   });
 }
 
+function ensurePlanetTurrets() {
+  const systems = getNearbySystems(state, state.radarRadius * 2);
+  for (const s of systems) {
+    for (const p of s.planets) {
+      const exists = state.planetTurrets.some(
+        t => t.gx === s.gx && t.gy === s.gy && t.planetIndex === p.index
+      );
+      if (!exists) {
+        state.planetTurrets.push({
+          gx: s.gx,
+          gy: s.gy,
+          planetIndex: p.index,
+          offset: 0,
+          cooldown: 0,
+          x: 0,
+          y: 0,
+        });
+      }
+    }
+  }
+}
+
 function tradeWithVendor(vendor) {
   if (!vendor) return;
   let msg = '';
@@ -238,6 +260,66 @@ export function update() {
   state.weaponHeat = Math.max(0, state.weaponHeat - 0.5);
   if (state.tick > 0 && state.tick % ENEMY_SPAWN_FRAMES === 0) {
     spawnEnemy();
+  }
+  ensurePlanetTurrets();
+
+  for (const t of state.planetTurrets) {
+    const star = getStarSystem(t.gx, t.gy);
+    if (!star) continue;
+    const p = star.planets[t.planetIndex];
+    const angle = p.phase + state.tick * p.speed;
+    const px = star.x + Math.cos(angle) * p.orbit;
+    const py = star.y + Math.sin(angle) * p.orbit;
+    const ta = angle + t.offset;
+    t.x = px + Math.cos(ta) * (p.size + 40);
+    t.y = py + Math.sin(ta) * (p.size + 40);
+    if (t.cooldown > 0) t.cooldown -= 1;
+    let target = null;
+    for (const e of state.enemies) {
+      const dx = e.x - t.x;
+      const dy = e.y - t.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 600) {
+        target = { dx, dy, dist };
+        break;
+      }
+    }
+    if (target && t.cooldown <= 0) {
+      const bulletSpeed = 8;
+      state.bullets.push({
+        x: t.x,
+        y: t.y,
+        vx: (target.dx / target.dist) * bulletSpeed,
+        vy: (target.dy / target.dist) * bulletSpeed,
+      });
+      t.cooldown = 20;
+    }
+  }
+
+  for (const base of state.buildings) {
+    if (base.type === 'turret') {
+      if (base.cooldown > 0) base.cooldown -= 1;
+      let target = null;
+      for (const e of state.enemies) {
+        const dx = e.x - base.x;
+        const dy = e.y - base.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 600) {
+          target = { dx, dy, dist };
+          break;
+        }
+      }
+      if (target && base.cooldown <= 0) {
+        const bulletSpeed = 8;
+        state.bullets.push({
+          x: base.x,
+          y: base.y,
+          vx: (target.dx / target.dist) * bulletSpeed,
+          vy: (target.dy / target.dist) * bulletSpeed,
+        });
+        base.cooldown = 20;
+      }
+    }
   }
 
   for (const base of state.buildings) {
@@ -589,6 +671,22 @@ export function draw() {
     ctx.restore();
   }
 
+  for (const t of state.planetTurrets) {
+    const bx = t.x - offsetX;
+    const by = t.y - offsetY;
+    ctx.save();
+    ctx.translate(bx, by);
+    ctx.fillStyle = 'grey';
+    ctx.beginPath();
+    ctx.moveTo(0, -10);
+    ctx.lineTo(10, 10);
+    ctx.lineTo(-10, 10);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
+  }
+
   for (const e of state.enemies) {
     const img = generateShipTexture(e.seed);
     ctx.drawImage(img, e.x - offsetX - img.width / 2, e.y - offsetY - img.height / 2);
@@ -720,6 +818,19 @@ export function draw() {
             const sx = rx + size / 2 + dx * size / 2;
             const sy = ry + size / 2 + dy * size / 2;
             ctx.fillStyle = b.type === 'turret' ? 'red' : 'purple';
+            ctx.fillRect(sx - 2, sy - 2, 4, 4);
+          }
+        }
+      }
+      for (const t of state.planetTurrets) {
+        if (t.gx === s.gx && t.gy === s.gy) {
+          const dx = (t.x - state.playerX) / radius;
+          const dy = (t.y - state.playerY) / radius;
+          if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) {
+            const sx = rx + size / 2 + dx * size / 2;
+            const sy = ry + size / 2 + dy * size / 2;
+            ctx.fillStyle = 'red';
+
             ctx.fillRect(sx - 2, sy - 2, 4, 4);
           }
         }

@@ -25,7 +25,9 @@ offer randomized cargo delivery missions that pay credits on completion.
 While landed, press **H** on planets with resources to gather Metal and Carbon.
 Press **B** to place a base module if you have 10 Ore, 5 Metal and 5 Carbon.
 Press **T** to deploy a defensive turret. Turrets automatically fire at nearby
-enemies and never overheat. Press **R** to rotate the selected module before
+enemies and never overheat. Every planet also has its own defense turret.
+Press **R** to rotate the selected module before
+
 building. Bases are saved locally so you can return to them later and appear as
 brown squares on planets and on the radar. Turrets show up in red on the
 minimap.
