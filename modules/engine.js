@@ -185,7 +185,7 @@ export function harvestResource() {
   return false;
 }
 
-export function placeBuilding() {
+export function placeBuilding(type = 'base') {
   if (!state.isLanded) {
     state.message = 'Must be landed on a planet';
     state.messageTimer = 180;
@@ -215,6 +215,8 @@ export function placeBuilding() {
             x: state.playerX,
             y: state.playerY,
             rot: state.buildRotation,
+            type,
+            cooldown: 0,
           });
           saveBuildings();
           state.message = 'Placed building module';
@@ -236,6 +238,32 @@ export function update() {
   state.weaponHeat = Math.max(0, state.weaponHeat - 0.5);
   if (state.tick > 0 && state.tick % ENEMY_SPAWN_FRAMES === 0) {
     spawnEnemy();
+  }
+
+  for (const base of state.buildings) {
+    if (base.type === 'turret') {
+      if (base.cooldown > 0) base.cooldown -= 1;
+      let target = null;
+      for (const e of state.enemies) {
+        const dx = e.x - base.x;
+        const dy = e.y - base.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 600) {
+          target = { dx, dy, dist };
+          break;
+        }
+      }
+      if (target && base.cooldown <= 0) {
+        const bulletSpeed = 8;
+        state.bullets.push({
+          x: base.x,
+          y: base.y,
+          vx: (target.dx / target.dist) * bulletSpeed,
+          vy: (target.dy / target.dist) * bulletSpeed,
+        });
+        base.cooldown = 20;
+      }
+    }
   }
 
   const orientation = Math.atan2(
@@ -546,8 +574,18 @@ export function draw() {
     ctx.save();
     ctx.translate(bx, by);
     ctx.rotate((base.rot * Math.PI) / 180);
-    ctx.fillStyle = 'brown';
-    ctx.fillRect(-10, -10, 20, 20);
+    if (base.type === 'turret') {
+      ctx.fillStyle = 'grey';
+      ctx.beginPath();
+      ctx.moveTo(0, -10);
+      ctx.lineTo(10, 10);
+      ctx.lineTo(-10, 10);
+      ctx.closePath();
+      ctx.fill();
+    } else {
+      ctx.fillStyle = 'brown';
+      ctx.fillRect(-10, -10, 20, 20);
+    }
     ctx.restore();
   }
 
@@ -681,7 +719,7 @@ export function draw() {
           if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) {
             const sx = rx + size / 2 + dx * size / 2;
             const sy = ry + size / 2 + dy * size / 2;
-            ctx.fillStyle = 'purple';
+            ctx.fillStyle = b.type === 'turret' ? 'red' : 'purple';
             ctx.fillRect(sx - 2, sy - 2, 4, 4);
           }
         }
