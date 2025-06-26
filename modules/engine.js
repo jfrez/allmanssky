@@ -47,7 +47,7 @@ function spawnEnemy() {
   });
 }
 
-function ensurePlanetTurrets() {
+function refreshPlanetTurrets() {
   const systems = getNearbySystems(state, state.radarRadius * 2);
   for (const s of systems) {
     for (const p of s.planets) {
@@ -291,7 +291,7 @@ export function update() {
   if (state.tick > 0 && state.tick % ENEMY_SPAWN_FRAMES === 0) {
     spawnEnemy();
   }
-  ensurePlanetTurrets();
+  refreshPlanetTurrets();
 
   for (const t of state.planetTurrets) {
     const star = getStarSystem(t.gx, t.gy);
@@ -834,7 +834,6 @@ export function draw() {
 
   ctx.fillStyle = 'grey';
   ctx.fillStyle = state.isOverheated ? 'red' : 'orange';
-  if (state.isOverheated) {
   ctx.fillRect(22, 22, state.playerHealth, 10);
   ctx.strokeStyle = 'white';
   ctx.strokeRect(20, 20, 104, 14);
@@ -1003,5 +1002,4 @@ export function draw() {
   } else {
     requestAnimationFrame(draw);
   }
-}
 }
