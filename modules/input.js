@@ -22,6 +22,8 @@ function handleKeyDown(e) {
     shootFunc();
   } else if (e.key === 'b' || e.key === 'B') {
     placeBuilding();
+  } else if (e.key === 't' || e.key === 'T') {
+    placeBuilding('turret');
   } else if (e.key === 'e' || e.key === 'E') {
     toggleLanding();
   } else if (e.key === 'h' || e.key === 'H') {

@@ -10,7 +10,7 @@ Enemy ships now spawn frequently (about one every thirty seconds) and will fire
 at you. Destroying one awards **200 credits**. Press **Space** or click the
 mouse to shoot back. Each planet and enemy
 
-Planets belong to solar systems orbiting colorful stars. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced roughly 50,000 units apart so systems cluster less tightly. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their
+Planets belong to solar systems orbiting colorful stars. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced roughly 500 units apart so systems cluster less tightly. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their
 If your ship is destroyed, a random sci-fi message appears for a few seconds and
 then the introduction plays again so you respawn near the nearest star.
 
@@ -24,12 +24,14 @@ offer randomized cargo delivery missions that pay credits on completion.
 
 While landed, press **H** on planets with resources to gather Metal and Carbon.
 Press **B** to place a base module if you have 10 Ore, 5 Metal and 5 Carbon.
-Press **R** to rotate the module before building. Bases are saved locally so
-you can return to them later and appear as brown squares on planets and on the
-radar.
+Press **T** to deploy a defensive turret. Turrets automatically fire at nearby
+enemies and never overheat. Press **R** to rotate the selected module before
+building. Bases are saved locally so you can return to them later and appear as
+brown squares on planets and on the radar. Turrets show up in red on the
+minimap.
 
 
-Planets belong to solar systems orbiting colorful stars. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced roughly 10,000 units apart so systems cluster close together. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their
+Planets belong to solar systems orbiting colorful stars. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced roughly 500 units apart so systems cluster close together. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their
 
 gravity pulls on the player. Press **E** to land on planets to refuel and heal, but
 
