@@ -311,6 +311,7 @@ export function update() {
     const dy = state.playerY - t.y;
     const dist = Math.hypot(dx, dy);
     if (dist < p.size * 10 && t.cooldown <= 0) {
+
       const bulletSpeed = 8;
       state.bullets.push({
         x: t.x,
