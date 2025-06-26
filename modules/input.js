@@ -74,3 +74,46 @@ export function setupInput(shoot) {
     }
   });
 }
+
+export function setupMobileControls(shoot) {
+  if (!('ontouchstart' in window || navigator.maxTouchPoints > 0)) return;
+  shootFunc = shoot;
+  const controls = document.getElementById('mobile-controls');
+  if (controls) controls.style.display = 'block';
+
+  function bindButton(id, down, up) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('touchstart', e => {
+      e.preventDefault();
+      down();
+    });
+    el.addEventListener('touchend', e => {
+      e.preventDefault();
+      up();
+    });
+  }
+
+  bindButton('btn-up', () => setKey('ArrowUp', true), () => setKey('ArrowUp', false));
+  bindButton('btn-down', () => setKey('ArrowDown', true), () => setKey('ArrowDown', false));
+  bindButton('btn-left', () => setKey('ArrowLeft', true), () => setKey('ArrowLeft', false));
+  bindButton('btn-right', () => setKey('ArrowRight', true), () => setKey('ArrowRight', false));
+  bindButton('btn-fire', () => shootFunc(), () => {});
+  bindButton('btn-land', () => toggleLanding(), () => {});
+  bindButton('btn-build', () => placeBuilding(), () => {});
+  bindButton('btn-harvest', () => harvestResource(), () => {});
+
+  const joystick = document.getElementById('joystick');
+  if (joystick) {
+    const updateAngle = e => {
+      const rect = joystick.getBoundingClientRect();
+      const x = e.touches[0].clientX - (rect.left + rect.width / 2);
+      const y = e.touches[0].clientY - (rect.top + rect.height / 2);
+      const ang = Math.atan2(y, x);
+      state.mouseX = canvas.width / 2 + Math.cos(ang) * 100;
+      state.mouseY = canvas.height / 2 + Math.sin(ang) * 100;
+    };
+    joystick.addEventListener('touchstart', e => { e.preventDefault(); updateAngle(e); });
+    joystick.addEventListener('touchmove', e => { e.preventDefault(); updateAngle(e); });
+  }
+}

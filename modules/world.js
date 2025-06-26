@@ -1,6 +1,7 @@
 import { getRandom, randomNormal } from './util.js';
 
-export const STAR_SPACING = 25000;
+export const STAR_SPACING = 12000;
+
 
 const starfieldTiles = new Map();
 
@@ -36,9 +37,10 @@ export function getStarSystem(gx, gy) {
     gy,
     planets: [],
   };
-  const count = Math.floor(rng() * 4);
+  const count = 1 + Math.floor(rng() * 9);
   for (let i = 0; i < count; i++) {
-    const orbit = star.size + rng() * 400 + 200;
+    const orbit = star.size + 200 + i * 120 + rng() * 80;
+
     const size = Math.max(20, randomNormal(rng, 100, 100));
     const speed = rng() * 0.0005 + 0.0002;
     const phase = rng() * Math.PI * 2;
