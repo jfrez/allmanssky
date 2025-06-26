@@ -1,6 +1,6 @@
 import { state, ctx, canvas, resetState } from './state.js';
 import { generatePlanetTexture, generateShipTexture } from './textures.js';
-import { drawStarfieldTile, getNearbySystems, findNearestStar, ensurePlanetTurrets, ensureStarNear } from './world.js';
+import { drawStarfieldTile, getNearbySystems, findNearestStar, getStarSystem, ensurePlanetTurrets, ensureStarNear } from './world.js';
 
 
 import { playIntro } from './intro.js';
@@ -280,7 +280,6 @@ export function update() {
   if (state.tick > 0 && state.tick % ENEMY_SPAWN_FRAMES === 0) {
     spawnEnemy();
   }
-
 
   for (const base of state.buildings) {
     if (base.type === 'turret') {
