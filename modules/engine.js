@@ -965,12 +965,7 @@ export function draw() {
     if (nearest) {
       let dx = (nearest.x - state.playerX) / radius;
       let dy = (nearest.y - state.playerY) / radius;
-  if (state.isRestarting) {
-    state.isRestarting = false;
-    restartGame();
-  } else {
-    requestAnimationFrame(draw);
-  }
+      const mag = Math.hypot(dx, dy);
       if (mag > 1) {
         dx /= mag;
         dy /= mag;
