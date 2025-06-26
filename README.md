@@ -24,7 +24,7 @@ While landed, press **H** on planets with resources to gather Metal and Carbon.
 Press **B** to place a base module if you have 10 Ore, 5 Metal and 5 Carbon.
 Press **R** to rotate the module before building. Bases are saved locally so
 you can return to them later and appear as brown squares on planets and on the
-radar.
+lock if they reach 100%. You must let them cool completely before
 
 Planets are guarded by 1 to 10 defense turrets depending on their size. Each
 turret has between three and ten hit points and displays a tiny health bar so
@@ -37,7 +37,7 @@ cannons, which are placed symmetrically along the ship's triangular frame. Each
 upgrade adds more firepower, letting you shoot multiple bullets at once.
 
 
-Planets belong to solar systems orbiting colorful stars. Star systems are generated procedurally and the game always spawns one close to your ship. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced roughly 50,000 units apart so systems cluster less tightly. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their
+Planets belong to solar systems orbiting colorful stars. Star systems are generated procedurally and the game always spawns one close to your ship. Planet sizes now vary widely with a standard deviation near 100 units, while stars lie no more than about 500 units apart so travel between systems is quick. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their
 
 gravity pulls on the player. Press **E** to land on planets to refuel and heal, but
 touching a star will slowly damage your ship. Some worlds also replenish fuel,

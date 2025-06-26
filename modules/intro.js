@@ -1,7 +1,6 @@
 import { canvas, ctx, state } from './state.js';
 import { findNearestStar, ensureStarNear } from './world.js';
 
-
 export function playIntro() {
   return new Promise(resolve => {
     let frame = 0;

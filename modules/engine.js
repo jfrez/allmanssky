@@ -6,7 +6,13 @@ import { playIntro } from './intro.js';
 const ENEMY_SPAWN_FRAMES = 60 * 30; // spawn roughly every 30 seconds
 const TURRET_COOLDOWN_FRAMES = 60; // turret fires about once per second
 
-
+  if (state.isOverheated || state.weaponHeat >= state.maxHeat) {
+    if (state.weaponHeat >= state.maxHeat) state.isOverheated = true;
+    return;
+  }
+  if (state.weaponHeat >= state.maxHeat) {
+    state.isOverheated = true;
+  }
 export function shoot() {
   if (state.weaponHeat >= state.maxHeat) return;
   const angle = Math.atan2(
@@ -229,6 +235,9 @@ export function placeBuilding() {
           }
           state.inventory.ore -= 10;
           state.inventory.metal -= 5;
+  if (state.isOverheated && state.weaponHeat <= 0) {
+    state.isOverheated = false;
+  }
           state.inventory.carbon -= 5;
           state.buildings.push({
             gx: s.gx,
@@ -612,7 +621,6 @@ export function draw() {
       ctx.moveTo(-10, -2);
       ctx.lineTo(-10 - len, 0);
       ctx.lineTo(-10, 2);
-
       ctx.closePath();
       ctx.fill();
     }
@@ -622,7 +630,6 @@ export function draw() {
       ctx.moveTo(10, -2);
       ctx.lineTo(10 + len, 0);
       ctx.lineTo(10, 2);
-
       ctx.closePath();
       ctx.fill();
     }
@@ -631,7 +638,6 @@ export function draw() {
   for (const c of state.cannons) {
     ctx.fillRect(c.x - 1, c.y - 4, 2, 4);
   }
-
   ctx.fillStyle = 'cyan';
   ctx.beginPath();
   ctx.moveTo(0, -12);
@@ -677,8 +683,8 @@ export function draw() {
   }
 
   ctx.fillStyle = 'grey';
-  ctx.fillRect(20, 20, 104, 14);
-  ctx.fillStyle = 'lime';
+  ctx.fillStyle = state.isOverheated ? 'red' : 'orange';
+  if (state.isOverheated) {
   ctx.fillRect(22, 22, state.playerHealth, 10);
   ctx.strokeStyle = 'white';
   ctx.strokeRect(20, 20, 104, 14);
