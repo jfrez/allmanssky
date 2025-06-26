@@ -13,6 +13,7 @@ export function shoot() {
     if (state.weaponHeat >= state.maxHeat && !state.isOverheated) {
       state.isOverheated = true;
       state.overheatTimer = 180; // 3 seconds
+
       if (state.messageTimer <= 0) {
         state.message = 'Weapons overheated!';
         state.messageTimer = 60;
