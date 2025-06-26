@@ -6,8 +6,10 @@ background on the fly. Use the arrow keys or WASD to fire your thrusters.
 Thruster flames animate while keys are held down so you can tell which jets are
 firing. Movement has inertia, so you'll drift through space unless you
 counter-thrust.
-Enemy ships appear very rarely (roughly one every five minutes) and will fire
-at you. Press **Space** or click the mouse to shoot back. Each planet and enemy
+Enemy ships now spawn frequently (about one every thirty seconds) and will fire
+at you. Destroying one awards **200 credits**. Press **Space** or click the
+mouse to shoot back. Each planet and enemy
+
 uses a unique procedurally created texture. A radar is always visible in the
 upper-right corner showing nearby planets. Clicking a planet on the radar
 instantly warps your ship to its location.
@@ -24,7 +26,7 @@ you can return to them later and appear as brown squares on planets and on the
 radar.
 
 
-Planets belong to solar systems orbiting colorful stars. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced around 12,000 units apart so traveling between them takes under ten seconds. Each system hosts one to nine planets on distinct orbits. Planet colors hint at what resources they hold. Their
+Planets belong to solar systems orbiting colorful stars. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced roughly 10,000 units apart so systems cluster close together. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their
 
 gravity pulls on the player. Press **E** to land on planets to refuel and heal, but
 touching a star will slowly damage your ship. Some worlds also replenish fuel,
@@ -34,7 +36,8 @@ times larger for long journeys. The game code is
 split into small ES modules inside the `modules` folder for clarity. Health and
 resource bars from 0&ndash;100% are shown in the upper left, along with your
 current X,Y coordinates. Key bindings and inventory counts appear at the bottom left.
-On touch devices an on-screen joystick rotates the ship while buttons for each thruster, landing, building, harvesting and firing let you play on mobile as well as desktop.
+
+On touch devices an on-screen joystick rotates the ship while large buttons for each thruster and action make it easy to play on phones. Pinch zooming and page scrolling are disabled so the canvas stays fixed in place.
 
 The map is infinite, so wander as far as you like. An
 introductory animation shows your ship diving into a black hole before you spawn

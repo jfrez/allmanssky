@@ -2,7 +2,7 @@ import { state, ctx, canvas } from './state.js';
 import { generatePlanetTexture, generateShipTexture } from './textures.js';
 import { drawStarfieldTile, getNearbySystems, findNearestStar } from './world.js';
 
-const ENEMY_SPAWN_FRAMES = 60 * 60 * 5; // spawn roughly every 5 minutes
+const ENEMY_SPAWN_FRAMES = 60 * 30; // spawn roughly every 30 seconds
 
 export function shoot() {
   if (state.weaponHeat >= state.maxHeat) return;
@@ -261,7 +261,6 @@ export function update() {
     return;
   }
 
-
   const thrust = 0.2;
   if (!state.isLanded) {
     if (state.keys.up && state.resources.fuel > 0) {
@@ -323,7 +322,12 @@ export function update() {
       const dy = b.y - e.y;
       if (dx * dx + dy * dy < 225) {
         e.health -= 1;
-        if (e.health <= 0) state.enemies.splice(j, 1);
+        if (e.health <= 0) {
+          state.enemies.splice(j, 1);
+          state.credits += 200;
+          state.message = 'Enemy destroyed +200c';
+          state.messageTimer = 120;
+        }
         hit = true;
       }
     }
