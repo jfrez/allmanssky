@@ -103,7 +103,6 @@ export function setupMobileControls(shoot) {
   // swap left/right thruster mapping for correct direction
   bindButton('btn-left', () => setKey('ArrowRight', true), () => setKey('ArrowRight', false));
   bindButton('btn-right', () => setKey('ArrowLeft', true), () => setKey('ArrowLeft', false));
-
   bindButton('btn-fire', () => shootFunc(), () => {});
   bindButton('btn-land', () => toggleLanding(), () => {});
   bindButton('btn-build', () => placeBuilding(), () => {});

@@ -26,6 +26,7 @@ export const state = {
   bullets: [],
   enemyBullets: [],
   weaponHeat: 0,
+  isOverheated: false,
   maxHeat: 100,
   tick: 0,
   mouseX: canvas.width / 2,
@@ -38,20 +39,25 @@ export const state = {
   credits: 1000,
   inventory: { ore: 0, metal: 0, carbon: 0 },
   maxInventory: 50,
+  shipScale: 1,
+  upgradeLevel: 0,
+  cannons: [{ x: 0, y: -12 }],
+  visitedPlanets: {},
   isLanded: false,
   landing: null,
-  isDead: false,
-  isRestarting: false,
   landedGX: null,
   landedGY: null,
   landedPlanetIndex: null,
+  isDead: false,
+  isRestarting: false,
+
   message: '',
   messageTimer: 0,
   mission: null,
   buildRotation: 0,
-  planetTurrets: [],
-
   buildings: JSON.parse(localStorage.getItem('buildings') || '[]'),
+  turrets: {},
+
 
 };
 
@@ -68,6 +74,7 @@ export function resetState() {
     bullets: [],
     enemyBullets: [],
     weaponHeat: 0,
+    isOverheated: false,
     tick: 0,
     mouseX: canvas.width / 2,
     mouseY: canvas.height / 2,
@@ -76,6 +83,10 @@ export function resetState() {
     radarTargets: [],
     credits: 1000,
     inventory: { ore: 0, metal: 0, carbon: 0 },
+    shipScale: 1,
+    upgradeLevel: 0,
+    cannons: [{ x: 0, y: -12 }],
+    visitedPlanets: {},
     isLanded: false,
     landing: null,
     landedGX: null,
@@ -87,6 +98,7 @@ export function resetState() {
     messageTimer: 0,
     mission: null,
     buildRotation: 0,
-    planetTurrets: [],
+    turrets: {},
+
   });
 }

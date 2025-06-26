@@ -1,5 +1,5 @@
 import { canvas, ctx, state } from './state.js';
-import { findNearestStar } from './world.js';
+import { findNearestStar, ensureStarNear } from './world.js';
 
 export function playIntro() {
   return new Promise(resolve => {
@@ -35,6 +35,8 @@ export function playIntro() {
       if (frame < 120) {
         requestAnimationFrame(anim);
       } else {
+        ensureStarNear(0, 0);
+
         const star = findNearestStar(0, 0);
         if (star) {
           state.playerX = star.x + star.size + 300;
