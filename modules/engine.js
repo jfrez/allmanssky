@@ -286,7 +286,6 @@ export function update() {
     spawnEnemy();
   }
 
-
   for (const base of state.buildings) {
     if (base.type === 'turret') {
       if (base.cooldown > 0) base.cooldown -= 1;

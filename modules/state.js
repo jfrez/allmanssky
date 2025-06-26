@@ -59,6 +59,7 @@ export const state = {
   buildRotation: 0,
   buildings: JSON.parse(localStorage.getItem('buildings') || '[]'),
   turrets: {},
+  planetTurrets: [],
 
 
 };
