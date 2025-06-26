@@ -150,6 +150,7 @@ export function toggleLanding() {
   }
   if (state.landing) return false;
   const systems = getNearbySystems(state, MAX_STAR_DISTANCE * 2);
+
   let closest = null;
   for (const s of systems) {
     for (const p of s.planets) {
@@ -280,7 +281,6 @@ export function update() {
   if (state.tick > 0 && state.tick % ENEMY_SPAWN_FRAMES === 0) {
     spawnEnemy();
   }
-
 
   for (const base of state.buildings) {
     if (base.type === 'turret') {
