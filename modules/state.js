@@ -57,6 +57,7 @@ export const state = {
   buildRotation: 0,
   buildings: JSON.parse(localStorage.getItem('buildings') || '[]'),
   turrets: {},
+  planetTurrets: [],
 
 
 };
@@ -99,6 +100,7 @@ export function resetState() {
     mission: null,
     buildRotation: 0,
     turrets: {},
+    planetTurrets: [],
 
   });
 }
