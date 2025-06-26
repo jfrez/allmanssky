@@ -103,7 +103,6 @@ export function findNearestStar(x, y, searchRadius = STAR_SPACING * 20) {
   }
   return closest ? closest.star : null;
 }
-
 export function ensurePlanetTurrets(gx, gy, planetIndex, size) {
   const key = `${gx},${gy},${planetIndex}`;
   if (!state.turrets[key]) {
@@ -116,3 +115,4 @@ export function ensurePlanetTurrets(gx, gy, planetIndex, size) {
   }
   return state.turrets[key];
 }
+
