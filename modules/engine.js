@@ -1,6 +1,6 @@
 import { state, ctx, canvas, resetState } from './state.js';
 import { generatePlanetTexture, generateShipTexture } from './textures.js';
-import { drawStarfieldTile, getNearbySystems, findNearestStar, getStarSystem, ensurePlanetTurrets, ensureStarNear } from './world.js';
+import { drawStarfieldTile, getNearbySystems, findNearestStar, ensurePlanetTurrets, ensureStarNear, MAX_STAR_DISTANCE } from './world.js';
 
 
 import { playIntro } from './intro.js';
@@ -149,7 +149,7 @@ export function toggleLanding() {
     return true;
   }
   if (state.landing) return false;
-  const systems = getNearbySystems(state, 1000);
+  const systems = getNearbySystems(state, MAX_STAR_DISTANCE);
   let closest = null;
   for (const s of systems) {
     for (const p of s.planets) {
@@ -547,22 +547,6 @@ export function update() {
           checkMissionCompletion(s, p);
           maybeStartMission(s, p);
         }
-  if (!state.isDead && state.playerHealth <= 0) {
-    const quotes = [
-      'La oscuridad del espacio te reclama...',
-      'Tu nave se pierde entre las estrellas muertas...',
-      'En el vacío solo queda silencio...',
-      'Explorador caído en el infinito...',
-      'Una nova envuelve tus restos cósmicos...'
-    ];
-    state.isDead = true;
-    state.message = quotes[Math.floor(Math.random() * quotes.length)];
-    state.messageTimer = 180;
-  }
-  if (state.isDead && state.messageTimer === 0) {
-    state.isRestarting = true;
-  }
-
       } else if (!state.isLanded) {
         const influence = 150 + p.size;
         if (dist < influence && dist > 0) {
