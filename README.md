@@ -1,69 +1,28 @@
 # Procedural Space Explorer
 
-This project is a small browser game written in pure JavaScript. It draws an
-endless galaxy and generates textures for every planet, ship and the starry
-background on the fly. Use the arrow keys or WASD to fire your thrusters.
-Thruster flames animate while keys are held down so you can tell which jets are
-firing. Movement has inertia, so you'll drift through space unless you
-counter-thrust.
-Enemy ships now spawn frequently (about one every thirty seconds) and will fire
-at you. Each one has a small health bar and survives anywhere from five to
-fifteen hits. Destroying one awards **200 credits**. Press **Space** or click
-the mouse to shoot back. Each planet and enemy
+This project is a small browser game written in plain JavaScript. It renders an endless galaxy on a full window canvas and procedurally generates textures for every planet, ship and star field. Simply open `index.html` in a modern browser or run a simple web server such as `python3 -m http.server` to play.
 
-Planets belong to solar systems orbiting colorful stars. Planet sizes now vary widely with a standard deviation near 100 units, while stars are spaced roughly 50,000 units apart so systems cluster less tightly. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their
-If your ship is destroyed, a random sci-fi message appears for a few seconds and
-then the introduction plays again so you respawn near the nearest star.
+## Gameplay
 
-upper-right corner showing nearby planets. Clicking a planet on the radar
-instantly warps your ship to its location.
+- **Movement:** Use the arrow keys or **WASD** to control your thrusters. Movement has inertia so you'll drift unless you counter-thrust.
+- **Combat:** Press **Space** or click to fire your cannons. Weapons build heat and temporarily lock when the meter reaches 100%, so let them cool before shooting again.
+- **Landing:** Press **E** near a planet to land. A short animation moves the ship down once you are within 10% of the planet's radius. Landed vendor worlds automatically trade Ore for credits and may offer randomized cargo delivery missions.
+- **Harvesting & Building:** While landed press **H** to gather Metal and Carbon on resource worlds. Press **B** to place a base module (requires 10 Ore, 5 Metal and 5 Carbon) and **R** to rotate it. Bases are stored locally and appear as brown squares on planets and on the radar.
+- **Radar:** A minimap in the upper right shows nearby planets and clicking one instantly warps your ship to its location.
 
-Some planets host alien traders. Press **E** near a planet to land. A short animation moves the ship down to the surface when you are within ten percent of its radius. Landing on a vendor world automatically
-exchanges Ore for credits at prices that vary per planet. Traders may also
+## World Generation
 
-offer randomized cargo delivery missions that pay credits on completion.
+- Stars are spaced about **500 units** apart. Each system hosts between one and nine planets on wide, non‑colliding orbits.
+- Planet sizes vary with a standard deviation near 100 units. Planet colors hint at available resources. Some planets replenish fuel, oxygen or food when you land.
+- Enemy ships spawn roughly every thirty seconds and take 5–15 shots to destroy, rewarding **200 credits** each.
+- Planets are protected by 1–10 defense turrets depending on size. Turrets have 3–10 hit points and a one‑second cooldown between shots, so they pause briefly before firing again.
+- Clearing all turrets on a planet and landing there for the first time upgrades your ship with additional cannons, letting you fire more bullets at once.
 
-While landed, press **H** on planets with resources to gather Metal and Carbon.
-Press **B** to place a base module if you have 10 Ore, 5 Metal and 5 Carbon.
-Press **R** to rotate the module before building. Bases are saved locally so
-you can return to them later and appear as brown squares on planets and on the
-lock if they reach 100%. You must let them cool completely before
+## Miscellaneous
 
-Planets are guarded by 1 to 10 defense turrets depending on their size. Each
-turret has between three and ten hit points and displays a tiny health bar so
-you can gauge your progress as you destroy them. They will open fire whenever
-you come within ten times the planet's radius, so approach carefully.
+- Touch controls provide a joystick and buttons on mobile devices.
+- Health and resource meters appear in the upper left along with your X,Y coordinates. Inventory and key bindings are shown at the bottom left.
+- The map is infinite—wander as far as you like. The minimap always points toward the nearest star.
+- Touching a star slowly damages your ship, while landing heals and refuels you. If you are destroyed a random sci‑fi message displays before you respawn near the closest star.
 
-If you clear a planet's defenses and then land on it for the very first time,
-your ship upgrades. It grows slightly larger and gains an additional pair of
-cannons, which are placed symmetrically along the ship's triangular frame. Each
-upgrade adds more firepower, letting you shoot multiple bullets at once.
-
-
-Planets belong to solar systems orbiting colorful stars. Star systems are generated procedurally and the game always spawns one close to your ship. Planet sizes now vary widely with a standard deviation near 100 units, while stars lie no more than about 500 units apart so travel between systems is quick. Each system hosts one to nine planets on widely separated orbits so they never collide. Planet colors hint at what resources they hold. Their
-
-gravity pulls on the player. Press **E** to land on planets to refuel and heal, but
-
-touching a star will slowly damage your ship. Some worlds also replenish fuel,
-oxygen and food, which slowly run out as you explore. Fuel capacity is now 1000
-times larger for long journeys. The game code is
-
-split into small ES modules inside the `modules` folder for clarity. Health and
-resource bars from 0&ndash;100% are shown in the upper left, along with your
-current X,Y coordinates. Key bindings and inventory counts appear at the bottom left.
-On touch devices an on-screen joystick rotates the ship while smaller thruster buttons sit around a central **Fire** button. Land, Build and Harvest controls are lined up along the bottom so the layout feels natural on phones. Pinch zooming and page scrolling are disabled so the canvas stays fixed in place.
-
-The map is infinite, so wander as far as you like. An
-introductory animation shows your ship diving into a black hole before you spawn
-near the closest solar system. The minimap now always displays an arrow pointing
-toward the nearest star. Weapons heat up as you fire and will temporarily
-lock if they reach 100%, so watch the heat meter and let them cool off before
-blasting away again.
-If your ship is destroyed, a random sci-fi message appears for a few seconds and
-then the introduction plays again so you respawn near the nearest star.
-Simply open `index.html` in your browser to play the game locally. The canvas
-fills the window for a full-screen experience. Modern
-browsers load the ES modules correctly when the page is opened from disk. If
-you prefer running a local server instead, any simple web server such as
-`python3 -m http.server` will work just as well.
-
+Enjoy exploring the galaxy!
