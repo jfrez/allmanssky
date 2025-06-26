@@ -8,6 +8,7 @@ export const MIN_STAR_DISTANCE = 4000;
 export const MAX_STAR_DISTANCE = 8000;
 
 
+
 const starfieldTiles = new Map();
 const forcedStars = new Map();
 
@@ -126,20 +127,28 @@ export function ensureStarNear(x, y) {
 
   const view = Math.max(canvas.width, canvas.height) / 2;
   const minDist = Math.max(MIN_STAR_DISTANCE, view + 50);
-  const dist = minDist + Math.random() * (MAX_STAR_DISTANCE - minDist);
-  const ang = Math.random() * Math.PI * 2;
-  const nx = x + Math.cos(ang) * dist;
-  const ny = y + Math.sin(ang) * dist;
-  const gx = Math.round(nx / STAR_SPACING);
-  const gy = Math.round(ny / STAR_SPACING);
-  const key = `${gx},${gy}`;
-  if (forcedStars.has(key)) return forcedStars.get(key);
-  const rng = mulberry32((gx * 97467) ^ (gy * 59359));
-  const star = createStar(gx, gy, rng);
-  star.x = nx;
-  star.y = ny;
-  forcedStars.set(key, star);
-  return star;
+  for (let i = 0; i < 10; i++) {
+    const dist = minDist + Math.random() * (MAX_STAR_DISTANCE - minDist);
+    const ang = Math.random() * Math.PI * 2;
+    const nx = x + Math.cos(ang) * dist;
+    const ny = y + Math.sin(ang) * dist;
+    const conflict = findNearestStar(nx, ny, 2000);
+    if (conflict && Math.hypot(conflict.x - nx, conflict.y - ny) < 2000) {
+      continue;
+    }
+    const gx = Math.round(nx / STAR_SPACING);
+    const gy = Math.round(ny / STAR_SPACING);
+    const key = `${gx},${gy}`;
+    if (forcedStars.has(key)) return forcedStars.get(key);
+    const rng = mulberry32((gx * 97467) ^ (gy * 59359));
+    const star = createStar(gx, gy, rng);
+    star.x = nx;
+    star.y = ny;
+    forcedStars.set(key, star);
+    return star;
+  }
+  return nearest;
+
 }
 
 export function ensurePlanetTurrets(gx, gy, planetIndex, size) {

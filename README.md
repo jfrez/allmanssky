@@ -13,6 +13,7 @@ This project is a small browser game written in plain JavaScript. It renders an 
 
 ## World Generation
 
+
 - Stars appear randomly between **4000** and **8000** units from the previous system and are generated outside your view. Each system hosts between one and nine planets on wide, non‑colliding orbits.
 
 - Planet sizes vary with a standard deviation near 100 units. Planet colors hint at available resources. Some planets replenish fuel, oxygen or food when you land.
