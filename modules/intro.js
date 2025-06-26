@@ -36,6 +36,7 @@ export function playIntro() {
         requestAnimationFrame(anim);
       } else {
         ensureStarNear(0, 0);
+
         const star = findNearestStar(0, 0);
         if (star) {
           state.playerX = star.x + star.size + 300;
