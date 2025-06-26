@@ -7,10 +7,11 @@ import { playIntro } from './intro.js';
 
 const ENEMY_SPAWN_FRAMES = 60 * 30; // spawn roughly every 30 seconds
 const TURRET_COOLDOWN_FRAMES = 60; // turret fires about once per second
+const LANDING_COOLDOWN_FRAMES = 30; // delay before next landing action
 
 export function shoot() {
-  if (state.isOverheated || state.weaponHeat >= state.maxHeat) {
-    if (state.weaponHeat >= state.maxHeat && !state.isOverheated) {
+  if (state.isOverheated || state.weaponHeat >= state.maxHeat * 0.9) {
+    if (state.weaponHeat >= state.maxHeat * 0.9 && !state.isOverheated) {
       state.isOverheated = true;
       state.overheatTimer = 180; // 3 seconds
       if (state.messageTimer <= 0) {
@@ -142,15 +143,16 @@ function upgradeShip() {
 }
 
 export function toggleLanding() {
+  if (state.landingCooldown > 0) return false;
   if (state.isLanded) {
     state.isLanded = false;
     state.message = 'Taking off';
     state.messageTimer = 120;
+    state.landingCooldown = LANDING_COOLDOWN_FRAMES;
     return true;
   }
   if (state.landing) return false;
   const systems = getNearbySystems(state, MAX_STAR_DISTANCE * 2);
-
   let closest = null;
   for (const s of systems) {
     for (const p of s.planets) {
@@ -176,6 +178,7 @@ export function toggleLanding() {
     state.playerVY = 0;
     state.message = 'Landing...';
     state.messageTimer = 60;
+    state.landingCooldown = LANDING_COOLDOWN_FRAMES;
     return true;
   }
   state.message = 'No planet to land on';
@@ -267,6 +270,7 @@ export function placeBuilding(type = 'base') {
 export function update() {
   state.tick += 1;
   if (state.messageTimer > 0) state.messageTimer -= 1;
+  if (state.landingCooldown > 0) state.landingCooldown -= 1;
   if (state.isOverheated) {
     if (state.overheatTimer > 0) {
       state.overheatTimer -= 1;
@@ -348,6 +352,7 @@ export function update() {
       state.playerX = l.targetX;
       state.playerY = l.targetY;
       state.isLanded = true;
+      state.landingCooldown = LANDING_COOLDOWN_FRAMES;
       state.landedGX = l.star.gx;
       state.landedGY = l.star.gy;
       state.landedPlanetIndex = l.planet.index;
@@ -789,11 +794,11 @@ export function draw() {
 
   ctx.fillStyle = 'grey';
   ctx.fillRect(20, 100, 104, 14);
-  ctx.fillStyle = state.weaponHeat >= state.maxHeat ? 'red' : 'orange';
+  ctx.fillStyle = state.weaponHeat >= state.maxHeat * 0.9 ? 'red' : 'orange';
   ctx.fillRect(22, 102, state.weaponHeat, 10);
   ctx.strokeStyle = 'white';
   ctx.strokeRect(20, 100, 104, 14);
-  if (state.weaponHeat >= state.maxHeat) {
+  if (state.isOverheated) {
     ctx.fillStyle = 'red';
     ctx.fillText('OVERHEATED', 130, 110);
   }
