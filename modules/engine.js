@@ -6,7 +6,7 @@ import { drawStarfieldTile, getNearbySystems, findNearestStar, ensurePlanetTurre
 import { playIntro } from './intro.js';
 
 const ENEMY_SPAWN_FRAMES = 60 * 30; // spawn roughly every 30 seconds
-const TURRET_COOLDOWN_FRAMES = 60; // turret fires about once per second
+const TURRET_COOLDOWN_FRAMES = 120; // turret fires about once every two seconds
 const LANDING_COOLDOWN_FRAMES = 30; // delay before next landing action
 
 export function shoot() {
@@ -520,7 +520,7 @@ export function update() {
         const turrets = ensurePlanetTurrets(s.gx, s.gy, p.index, p.size);
         for (const t of turrets) {
           if (t.cooldown > 0) t.cooldown -= 1;
-          if (dist < p.size * 10 && t.cooldown <= 0) {
+          if (dist < p.size * 2 && t.cooldown <= 0) {
 
             const tx = px + Math.cos(t.angle) * (p.size + 10);
             const ty = py + Math.sin(t.angle) * (p.size + 10);
