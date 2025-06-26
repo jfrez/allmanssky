@@ -285,8 +285,6 @@ export function update() {
   if (state.tick > 0 && state.tick % ENEMY_SPAWN_FRAMES === 0) {
     spawnEnemy();
   }
-
-
   for (const base of state.buildings) {
     if (base.type === 'turret') {
       if (base.cooldown > 0) base.cooldown -= 1;
@@ -521,7 +519,7 @@ export function update() {
         const turrets = ensurePlanetTurrets(s.gx, s.gy, p.index, p.size);
         for (const t of turrets) {
           if (t.cooldown > 0) t.cooldown -= 1;
-          if (dist < p.size * 10 && t.cooldown <= 0) {
+          if (dist < p.size * 2 && t.cooldown <= 0) {
 
             const tx = px + Math.cos(t.angle) * (p.size + 10);
             const ty = py + Math.sin(t.angle) * (p.size + 10);
