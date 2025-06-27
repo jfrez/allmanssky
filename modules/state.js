@@ -60,6 +60,8 @@ export const state = {
   buildings: JSON.parse(localStorage.getItem('buildings') || '[]'),
   turrets: {},
   planetTurrets: [],
+  remotePlayers: {},
+  clientId: null,
 
 
 };
@@ -104,5 +106,20 @@ export function resetState() {
     mission: null,
     buildRotation: 0,
     turrets: {},
+    planetTurrets: [],
+    remotePlayers: {},
+    clientId: null,
   });
+}
+
+export function gainCannons(count) {
+  for (let i = 0; i < count; i++) {
+    state.cannons.push({ x: (Math.random() - 0.5) * 20, y: -12 });
+  }
+}
+
+export function loseCannons(count) {
+  for (let i = 0; i < count && state.cannons.length > 1; i++) {
+    state.cannons.pop();
+  }
 }

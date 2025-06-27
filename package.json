@@ -1,0 +1,13 @@
+{
+  "name": "procedural-space-explorer",
+  "version": "1.0.0",
+  "description": "Multiplayer server for Procedural Space Explorer",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.17.0"
+  }
+}

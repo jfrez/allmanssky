@@ -4,6 +4,7 @@ import { drawStarfieldTile, getNearbySystems, findNearestStar, ensurePlanetTurre
 
 
 import { playIntro } from './intro.js';
+import { sendState, queueBullet, sendKill } from './network.js';
 
 const ENEMY_SPAWN_FRAMES = 60 * 30; // spawn roughly every 30 seconds
 const TURRET_COOLDOWN_FRAMES = 120; // turret fires about once every two seconds
@@ -37,6 +38,12 @@ export function shoot() {
       y: state.playerY + oy,
       vx: Math.cos(angle) * bulletSpeed,
       vy: Math.sin(angle) * bulletSpeed,
+    });
+    queueBullet({
+      x: state.playerX + ox,
+      y: state.playerY + oy,
+      vx: Math.cos(angle) * bulletSpeed,
+      vy: Math.sin(angle) * bulletSpeed
     });
   }
   state.weaponHeat = Math.min(state.maxHeat, state.weaponHeat + 20);
@@ -478,6 +485,18 @@ export function update() {
         }
       }
 
+      if (!hit) {
+        for (const [pid, p] of Object.entries(state.remotePlayers)) {
+          const dx = b.x - p.x;
+          const dy = b.y - p.y;
+          if (dx * dx + dy * dy < 225) {
+            sendKill(pid);
+            hit = true;
+            break;
+          }
+        }
+      }
+
       if (hit) state.bullets.splice(i, 1);
     }
 
@@ -594,6 +613,7 @@ export function update() {
     state.isRestarting = true;
   }
 
+  sendState();
 }
 
 export function draw() {
@@ -714,6 +734,23 @@ export function draw() {
   ctx.closePath();
   ctx.fill();
   ctx.restore();
+
+  // draw remote players
+  for (const p of Object.values(state.remotePlayers)) {
+    const px = p.x - offsetX;
+    const py = p.y - offsetY;
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.rotate(p.angle + Math.PI / 2);
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.moveTo(0, -8);
+    ctx.lineTo(6, 8);
+    ctx.lineTo(-6, 8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
 
   for (const base of state.buildings) {
     const bx = base.x - offsetX;
