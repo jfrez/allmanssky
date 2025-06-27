@@ -26,4 +26,10 @@ This project is a small browser game written in plain JavaScript. It renders an 
 - The map is infinite—wander as far as you like. The minimap always points toward the nearest star.
 - Touching a star slowly damages your ship, while landing heals and refuels you. If you are destroyed a random sci‑fi message displays before you respawn near the closest star.
 
+## Multiplayer
+
+Run the WebSocket server with `npm start` and open the game in multiple browsers.
+Each client will broadcast its position and fired bullets so you can see and fight other explorers.
+Destroying another player transfers half of their cannons to your ship.
+
 Enjoy exploring the galaxy!

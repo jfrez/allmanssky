@@ -23,8 +23,8 @@ Features from No Man's Sky to consider implementing:
   - [ ] Key characters that provide narrative context
   - [ ] Special items unlocked by completing the storyline
 - [ ] Multiplayer or cooperative exploration
-  - [ ] Basic peer-to-peer connection setup
-  - [ ] Sync player positions and actions across clients
+  - [x] Basic peer-to-peer connection setup
+  - [x] Sync player positions and actions across clients via WebSockets
   - [ ] Optional text chat to communicate
 - [ ] Upgrading and customizing starships and tools
   - [ ] Installable modules that modify stats
